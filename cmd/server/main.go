@@ -14,7 +14,6 @@ const (
 )
 
 func main() {
-	mux := http.NewServeMux()
 	handler := &WebhookHandler{
 		Secret: []byte(os.Getenv("WEBHOOK_SECRET")),
 	}
@@ -23,13 +22,12 @@ func main() {
 		log.Fatal("missing required webhook sercret")
 	}
 
+	mux := http.NewServeMux()
 	mux.Handle("/event", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		validateAndParseRequest(w, r, handler)
 	}))
 
 	server := &http.Server{
-		// We listen on port 8443 such that we do not need root privileges or extra capabilities for this server.
-		// The Service object will take care of mapping this port to the HTTPS port 443.
 		Addr:    ":8443",
 		Handler: mux,
 	}
@@ -59,8 +57,8 @@ func validateAndParseRequest(w http.ResponseWriter, r *http.Request, handler *We
 		return
 	}
 
-	deployment := &Deployment{Request: webhook}
-	defer deployment.release()
+	//deployment := &Deployment{Request: webhook}
+	//defer deployment.release()
 
 	succeedRequest(w)
 }
