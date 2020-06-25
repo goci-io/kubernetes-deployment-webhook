@@ -16,7 +16,7 @@ const (
 	jsonContentType = `application/json`
 )
 
-type Repository interface {
+type Repository struct {
 	Private bool `json:"private"`
 }
 
