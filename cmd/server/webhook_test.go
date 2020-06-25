@@ -88,3 +88,19 @@ func TestWebhookValidateRequestSucceeds(t *testing.T) {
 		t.Error("wrong content received")
 	}
 }
+
+func TestWebhookIsEligibleForNonWhitelistedOrgFails(t *testing.T) {
+	handler := &WebhookHandler{
+		OrganizationWhitelist: []string{"goci-io", "goci-io-dev"},
+	}
+
+	webhook := &WebhookContext{
+		Organization: "another-org",
+	}
+
+	eligible := handler.isEligible(webhook)
+
+	if eligible {
+		t.Error("expected another-org to be ineligible as its not a whitelisted org")
+	}
+}

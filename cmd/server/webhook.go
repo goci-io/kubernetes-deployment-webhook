@@ -23,9 +23,15 @@ type Repository struct {
 type WebhookContext struct {
 	Action string 		  `json:"action"`
 	Repository Repository `json:"repository"`
+	Organization string   `json:"organization"`
 }
 
-func (webhook *WebhookContext) isEligible() bool {
+type WebhookHandler struct {
+	Secret []byte
+	OrganizationWhitelist []string
+}
+
+func (handler *WebhookHandler) isEligible(webhook *WebhookContext) bool {
 	if webhook.Action != "published" {
 		return false
 	}
@@ -34,11 +40,11 @@ func (webhook *WebhookContext) isEligible() bool {
 		return false
 	}
 
-	return true
-}  
+	if findIndex(handler.OrganizationWhitelist, webhook.Organization) < 0 {
+		return false
+	}
 
-type WebhookHandler struct {
-	Secret []byte
+	return true
 }
 
 func (handler *WebhookHandler) validateRequest(w http.ResponseWriter, r *http.Request) ([]byte, error) {
@@ -103,4 +109,13 @@ func signBody(secret, body []byte) []byte {
 	computed := hmac.New(sha1.New, secret)
 	computed.Write(body)
 	return []byte(computed.Sum(nil))
+}
+
+func findIndex(arr []string, search string) int {
+    for i, n := range arr {
+        if search == n {
+            return i
+        }
+    }
+    return -1
 }
