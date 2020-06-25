@@ -72,13 +72,11 @@ func (handler *WebhookHandler) validateRequest(w http.ResponseWriter, r *http.Re
 
 func (handler *WebhookHandler) parse(body []byte) (*WebhookContext, error) {
 	webhook := &WebhookContext{}
-
 	if len(body) == 0 {
 		return webhook, errors.New("request body is empty")
 	}
 
 	err := json.Unmarshal([]byte(body), *webhook)
-
 	if err != nil {
 		return webhook, errors.New("invalid request, could not parse webhook object")
 	}
