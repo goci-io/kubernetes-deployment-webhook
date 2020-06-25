@@ -21,6 +21,7 @@ At goci.io we use this Webhook Server for our external Provider-Integrations to 
 2. Configure Environment
 ```
 export WEBHOOK_SECRET=my-secret
+export ORGANIZATION_WHITELIST=org1,org2
 ```
 3. Run
 ```
@@ -29,7 +30,10 @@ export WEBHOOK_SECRET=my-secret
 
 You can also use our Docker Release:
 ```
-docker run -e WEBHOOK_SECRET=my-secret -it gocidocker/k8s-deployment-webhook:v0.1.0
+docker run \
+    -e WEBHOOK_SECRET=my-secret \
+    -e ORGANIZATION_WHITELIST=org1,org2 \
+    -it gocidocker/k8s-deployment-webhook:v0.1.0
 ```
 
 ### Deploy
@@ -37,9 +41,14 @@ docker run -e WEBHOOK_SECRET=my-secret -it gocidocker/k8s-deployment-webhook:v0.
 Using [goci-service-chart](https://github.com/goci-io/goci-service-chart) with the following **example config**: 
 
 1. Create a Secret containing the `WEBHOOK_SECRET` environment variable
+2. Ensure following config environment variables are set as well: `ORGANIZATION_WHITELIST`
 2. Configure the following `values.yaml`:  
 ```yaml
 port: 8443
+
+configMap:
+  data:
+    ORGANIZATION_WHITELIST: org1,org2
 
 envFrom:
 - secretRef:

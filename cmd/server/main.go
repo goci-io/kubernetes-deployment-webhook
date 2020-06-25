@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"log"
+	"strings"
 	"net/http"
 	"path/filepath"
 )
@@ -16,6 +17,7 @@ const (
 func main() {
 	handler := &WebhookHandler{
 		Secret: []byte(os.Getenv("WEBHOOK_SECRET")),
+		OrganizationWhitelist: strings.Split(os.Getenv("ORGANIZATION_WHITELIST"), ","),
 	}
 
 	if len(handler.Secret) == 0 {
@@ -52,7 +54,7 @@ func validateAndParseRequest(w http.ResponseWriter, r *http.Request, handler *We
 		return
 	}
 
-	if !webhook.isEligible() {
+	if !handler.isEligible(webhook) {
 		succeedRequest(w)
 		return
 	}
