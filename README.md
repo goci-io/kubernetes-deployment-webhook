@@ -15,15 +15,22 @@ At goci.io we use this Webhook Server for our external Provider-Integrations to 
 ### Run
 
 1. Build the Binary
-`make image/helm-deployment` or `make image/helm-deployment/darwin`. In case you are running on a different GOOS than Linux or Darwin you need to use `GOOS=<GOOS> go build ./cmd/server` by your own.
+`make image/server` or `make image/server/darwin`.   
+1.1 In case you are running on a different GOOS than Linux or Darwin you need to use `GOOS=<GOOS> go build -o ./webhook-server ./cmd/server` by your own.
+
 2. Configure Environment
 ```
 export WEBHOOK_SECRET=my-secret
 ```
 3. Run
-`./webhook-server`
+```
+./webhook-server
+```
 
-You can also use our Docker Release `docker run -e WEBHOOK_SECRET=my-secret -it gocidocker/k8s-deployment-webhook:v0.1.0`
+You can also use our Docker Release:
+```
+docker run -e WEBHOOK_SECRET=my-secret -it gocidocker/k8s-deployment-webhook:v0.1.0
+```
 
 ### Deploy
 
