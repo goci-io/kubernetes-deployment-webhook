@@ -126,6 +126,9 @@ func TestWebhookIsEligibleForNonWhitelistedOrgFails(t *testing.T) {
 	}
 
 	webhook := &WebhookContext{
+		Action: "published",
+		Release: &Release{},
+		Repository: &Repository{},
 		Organization: "another-org",
 	}
 

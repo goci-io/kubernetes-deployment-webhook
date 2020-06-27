@@ -17,6 +17,7 @@ const (
 
 func main() {
 	handler := &WebhookHandler{
+		GitHost: getEnv("GIT_HOST", "github.com"),
 		Secret: []byte(os.Getenv("WEBHOOK_SECRET")),
 		OrganizationWhitelist: strings.Split(os.Getenv("ORGANIZATION_WHITELIST"), ","),
 	}
@@ -24,6 +25,9 @@ func main() {
 	if len(handler.Secret) == 0 {
 		log.Fatal("missing required webhook sercret")
 	}
+
+	k8sClient := &KubernetesClient{}
+	k8sClient.init()
 
 	mux := http.NewServeMux()
 	mux.Handle("/event", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -81,4 +85,13 @@ func failRequest(w http.ResponseWriter, code int, err error) {
 	if writeErr != nil {
 		log.Printf("Could not write response: %v", writeErr)
 	}
+}
+
+func getEnv(name string, fallback string) string {
+	env := os.Getenv(name)
+	if len(env) == 0 {
+		return fallback
+	}
+
+	return env
 }

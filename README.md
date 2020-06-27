@@ -7,8 +7,7 @@
 ### Purpose 
 
 HTTP Server listening for Webhooks from Version Control Systems to deploy Kubernetes Jobs utilizing In-Cluster Auth to connect to the Kubernetes API. 
-Each Workflow within a Repository can also be assigned to different ServiceAccounts to support different Permissions and Environments.
-This Application can currently only validate Github Webhook Signatures and deploy from publicly available Repositories. 
+This Application can currently only validate Github Webhook Signatures and deploy from publicly available Repositories. Further restrictions initially apply by default to enhance security for example by disabling webhook from forked Repositories and limited to Releases or pushes to a references ending with `/master`. 
 
 At goci.io we use this Webhook Server for our external Provider-Integrations to support their own Release-Cycles and further configuration for Deployments.
 
@@ -20,8 +19,9 @@ At goci.io we use this Webhook Server for our external Provider-Integrations to 
 
 2. Configure Environment
 ```
-export WEBHOOK_SECRET=my-secret
-export ORGANIZATION_WHITELIST=org1,org2
+export GIT_HOST=github.com (default)
+export WEBHOOK_SECRET=my-secret (required)
+export ORGANIZATION_WHITELIST=org1,org2 (default: none)
 ```
 3. Run
 ```

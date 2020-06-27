@@ -16,32 +16,42 @@ const (
 	jsonContentType = `application/json`
 )
 
+type Release struct {
+	TagName string `json:"tag_name"`
+}
+
 type Repository struct {
-	Fork bool    `json:"fork"`
+	Fork bool 	 `json:"fork"`
 	Private bool `json:"private"`
 }
 
 type WebhookContext struct {
-	Action string 		  `json:"action"`
-	Repository Repository `json:"repository"`
-	Organization string   `json:"organization"`
+	Action string 		   `json:"action"`
+	Repository *Repository `json:"repository"`
+	Organization string    `json:"organization"`
+	Reference string	   `json:"ref,omitempty"`
+	Release *Release       `json:"release,omitempty"`
 }
 
 type WebhookHandler struct {
 	Secret []byte
+	GitHost string
 	OrganizationWhitelist []string
 }
 
 func (handler *WebhookHandler) isEligible(webhook *WebhookContext) bool {
-	if webhook.Action != "published" {
+	isRelease := webhook.Action == "published" && webhook.Release != nil
+	isMasterMerge := len(webhook.Reference) > 0 && strings.HasSuffix(webhook.Reference, "/master")
+
+	if !isRelease && !isMasterMerge {
 		return false
 	}
 
-	if webhook.Repository.Private {
+	if webhook.Repository == nil || webhook.Repository.Private || webhook.Repository.Fork {
 		return false
 	}
 
-	if findIndex(handler.OrganizationWhitelist, webhook.Organization) < 0 {
+	if !contains(handler.OrganizationWhitelist, webhook.Organization) {
 		return false
 	}
 
@@ -107,11 +117,11 @@ func signBody(secret, body []byte) []byte {
 	return []byte(computed.Sum(nil))
 }
 
-func findIndex(arr []string, search string) int {
-    for i, n := range arr {
+func contains(arr []string, search string) bool {
+    for _, n := range arr {
         if search == n {
-            return i
+            return true
         }
     }
-    return -1
+    return false
 }
