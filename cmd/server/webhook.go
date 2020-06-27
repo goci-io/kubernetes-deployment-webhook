@@ -47,21 +47,18 @@ func (handler *WebhookHandler) isEligible(webhook *WebhookContext) bool {
 	return true
 }
 
-func (handler *WebhookHandler) validateRequest(w http.ResponseWriter, r *http.Request) ([]byte, error) {
+func (handler *WebhookHandler) validateRequest(r *http.Request) ([]byte, int, error) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return nil, fmt.Errorf("invalid method %s, only POST requests are allowed", r.Method)
+		return nil, http.StatusMethodNotAllowed, fmt.Errorf("invalid method %s, only POST requests are allowed", r.Method)
 	}
 
 	if contentType := r.Header.Get("Content-Type"); contentType != jsonContentType {
-		w.WriteHeader(http.StatusBadRequest)
-		return nil, fmt.Errorf("unsupported content type %s, only %s is supported", contentType, jsonContentType)
+		return nil, http.StatusBadRequest, fmt.Errorf("unsupported content type %s, only %s is supported", contentType, jsonContentType)
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return nil, fmt.Errorf("could not read request body: %v", err)
+		return nil, http.StatusBadRequest, fmt.Errorf("could not read request body: %v", err)
 	}
 
 	delivery := r.Header.Get("x-github-delivery")
@@ -69,11 +66,10 @@ func (handler *WebhookHandler) validateRequest(w http.ResponseWriter, r *http.Re
 	event := r.Header.Get("x-github-event")
 
 	if len(signature) == 0 || len(event) == 0 || len(delivery) == 0 || !verifySignature(handler.Secret, signature, body) {
-		w.WriteHeader(http.StatusBadRequest)
-		return nil, errors.New("missing github event signature, webhook event, id or signature is invalid")
+		return nil, http.StatusBadRequest, errors.New("missing github event signature, webhook event, id or signature is invalid")
 	}
 
-	return body, nil
+	return body, http.StatusAccepted, nil
 }
 
 func (handler *WebhookHandler) parse(body []byte) (*WebhookContext, error) {

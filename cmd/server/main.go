@@ -42,37 +42,38 @@ func main() {
 func validateAndParseRequest(w http.ResponseWriter, r *http.Request, handler *WebhookHandler) {
 	log.Print("Handling webhook request ...")
 
-	body, err := handler.validateRequest(w, r);
+	body, code, err := handler.validateRequest(r);
 	if err != nil {
-		failRequest(w, err)
+		failRequest(w, code, err)
 		return
 	}
 
 	webhook, err := handler.parse(body)
 	if err != nil {
-		failRequest(w, err)
+		failRequest(w, code, err)
 		return
 	}
 
 	if !handler.isEligible(webhook) {
-		succeedRequest(w)
+		succeedRequest(w, http.StatusOK)
 		return
 	}
 
 	//deployment := &Deployment{Request: webhook}
 	//defer deployment.release()
 
-	succeedRequest(w)
+	succeedRequest(w, code)
 }
 
-func succeedRequest(w http.ResponseWriter) {
+func succeedRequest(w http.ResponseWriter, code int) {
 	log.Print("Webhook request handled successfully")
-	w.WriteHeader(http.StatusAccepted)
+	w.WriteHeader(code)
 }
 
-func failRequest(w http.ResponseWriter, err error) {
+func failRequest(w http.ResponseWriter, code int, err error) {
 	log.Printf("Error handling webhook request: %v", err)
 
+	w.WriteHeader(code)
 	_, writeErr := w.Write([]byte(err.Error()))
 
 	if writeErr != nil {
