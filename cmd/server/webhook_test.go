@@ -100,6 +100,26 @@ func TestWebhookValidateRequestSucceeds(t *testing.T) {
 	}
 }
 
+func TestWebhookParseMapsPayloadToWebhookContext(t *testing.T) {
+	ctx := &WebhookContext{}
+	handler := &WebhookHandler{}
+	payload := []byte("{\"organization\":\"goci-io\",\"action\":\"published\",\"repository\":{\"fork\":true,\"private\":false}}")
+
+	handler.parse(payload, ctx)
+
+	if ctx.Organization != "goci-io" {
+		t.Error("expected goci-io as organization")
+	}
+
+	if !ctx.Repository.Fork {
+		t.Error("expedted repository to be a fork")
+	}
+
+	if ctx.Repository.Private {
+		t.Error("expedted repository to be public")
+	}
+}
+
 func TestWebhookIsEligibleForNonWhitelistedOrgFails(t *testing.T) {
 	handler := &WebhookHandler{
 		OrganizationWhitelist: []string{"goci-io", "goci-io-dev"},

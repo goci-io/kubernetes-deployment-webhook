@@ -17,6 +17,7 @@ const (
 )
 
 type Repository struct {
+	Fork bool    `json:"fork"`
 	Private bool `json:"private"`
 }
 
@@ -77,7 +78,7 @@ func (handler *WebhookHandler) parse(body []byte, into *WebhookContext) (*Webhoo
 		return into, errors.New("request body is empty")
 	}
 
-	err := json.Unmarshal(body, *into)
+	err := json.Unmarshal(body, into)
 	if err != nil {
 		return into, errors.New("invalid request, could not parse webhook object")
 	}
