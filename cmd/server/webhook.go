@@ -72,18 +72,17 @@ func (handler *WebhookHandler) validateRequest(r *http.Request) ([]byte, int, er
 	return body, http.StatusAccepted, nil
 }
 
-func (handler *WebhookHandler) parse(body []byte) (*WebhookContext, error) {
-	webhook := &WebhookContext{}
+func (handler *WebhookHandler) parse(body []byte, into *WebhookContext) (*WebhookContext, error) {
 	if len(body) == 0 {
-		return webhook, errors.New("request body is empty")
+		return into, errors.New("request body is empty")
 	}
 
-	err := json.Unmarshal([]byte(body), *webhook)
+	err := json.Unmarshal(body, *into)
 	if err != nil {
-		return webhook, errors.New("invalid request, could not parse webhook object")
+		return into, errors.New("invalid request, could not parse webhook object")
 	}
 
-	return webhook, nil
+	return into, nil
 }
 
 // https://gist.github.com/rjz/b51dc03061dbcff1c521

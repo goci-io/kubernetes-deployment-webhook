@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"log"
+	"errors"
 	"strings"
 	"net/http"
 	"path/filepath"
@@ -26,7 +27,13 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/event", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		validateAndParseRequest(w, r, handler)
+		webhook, code, err := validateAndParseRequest(r, handler)
+
+		if err != nil && code > 399 {
+			failRequest(w, code, err)
+		} else {
+			succeedRequest(w, webhook, code)
+		}
 	}))
 
 	server := &http.Server{
@@ -39,34 +46,29 @@ func main() {
 	log.Fatal(server.ListenAndServeTLS(certPath, keyPath))
 }
 
-func validateAndParseRequest(w http.ResponseWriter, r *http.Request, handler *WebhookHandler) {
+func validateAndParseRequest(r *http.Request, handler *WebhookHandler) (*WebhookContext, int, error) {
 	log.Print("Handling webhook request ...")
 
+	webhook := &WebhookContext{}
 	body, code, err := handler.validateRequest(r);
 	if err != nil {
-		failRequest(w, code, err)
-		return
+		return webhook, code, err
 	}
 
-	webhook, err := handler.parse(body)
+	webhook, err = handler.parse(body, webhook)
 	if err != nil {
-		failRequest(w, code, err)
-		return
+		return webhook, code, err
 	}
 
 	if !handler.isEligible(webhook) {
-		succeedRequest(w, http.StatusOK)
-		return
+		return webhook, http.StatusOK, errors.New("webhook is not eligible for processing")
 	}
 
-	//deployment := &Deployment{Request: webhook}
-	//defer deployment.release()
-
-	succeedRequest(w, code)
+	return webhook, http.StatusAccepted, nil
 }
 
-func succeedRequest(w http.ResponseWriter, code int) {
-	log.Print("Webhook request handled successfully")
+func succeedRequest(w http.ResponseWriter, webhook *WebhookContext, code int) {
+	log.Printf("Webhook request handled successfully: %v", webhook)
 	w.WriteHeader(code)
 }
 
