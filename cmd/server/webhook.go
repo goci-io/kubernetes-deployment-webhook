@@ -21,8 +21,9 @@ type Release struct {
 }
 
 type Repository struct {
-	Fork bool 	 `json:"fork"`
-	Private bool `json:"private"`
+	Name string		`json:"name"`
+	Fork bool		`json:"fork"`
+	Private bool 	`json:"private"`
 }
 
 type WebhookContext struct {
