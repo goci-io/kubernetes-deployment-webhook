@@ -7,6 +7,8 @@ import (
 	"strings"
 	"net/http"
 	"path/filepath"
+	"github.com/goci-io/deployment-webhook/cmd/server/config"
+	"github.com/goci-io/deployment-webhook/cmd/server/clients"
 )
 
 const (
@@ -17,6 +19,7 @@ const (
 
 func main() {
 	handler := &WebhookHandler{
+		GitHost: getEnv("GIT_HOST", "github.com"),
 		Secret: []byte(os.Getenv("WEBHOOK_SECRET")),
 		OrganizationWhitelist: strings.Split(os.Getenv("ORGANIZATION_WHITELIST"), ","),
 	}
@@ -25,9 +28,20 @@ func main() {
 		log.Fatal("missing required webhook sercret")
 	}
 
+	k8sClient := &clients.KubernetesClient{}
+	k8sClient.Init()
+
+	config := &config.DeploymentsConfig{}
+	config.LoadAndParse(getEnv("REPO_CONFIG_FILE", "/run/config/repos.yaml"))
+
 	mux := http.NewServeMux()
 	mux.Handle("/event", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		webhook, code, err := validateAndParseRequest(r, handler)
+		deployment := &Deployment{
+			Kubernetes: *k8sClient,
+			Configs: *config,
+		}
+
+		webhook, code, err := validateAndParseRequest(r, handler, deployment)
 
 		if err != nil && code > 399 {
 			failRequest(w, code, err)
@@ -46,7 +60,7 @@ func main() {
 	log.Fatal(server.ListenAndServeTLS(certPath, keyPath))
 }
 
-func validateAndParseRequest(r *http.Request, handler *WebhookHandler) (*WebhookContext, int, error) {
+func validateAndParseRequest(r *http.Request, handler *WebhookHandler, deployment *Deployment) (*WebhookContext, int, error) {
 	log.Print("Handling webhook request ...")
 
 	webhook := &WebhookContext{}
@@ -81,4 +95,13 @@ func failRequest(w http.ResponseWriter, code int, err error) {
 	if writeErr != nil {
 		log.Printf("Could not write response: %v", writeErr)
 	}
+}
+
+func getEnv(name string, fallback string) string {
+	env := os.Getenv(name)
+	if len(env) == 0 {
+		return fallback
+	}
+
+	return env
 }

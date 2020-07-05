@@ -1,0 +1,5 @@
+- organization: goci-io
+  repository: example-repository
+  image: repo/image:tag
+  serviceAccount: default
+  namespace: default
