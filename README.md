@@ -1,6 +1,7 @@
 # kubernetes-deployment-webhook
 
 ![Validate](https://github.com/goci-io/kubernetes-deployment-webhook/workflows/Validate/badge.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/goci-io/kubernetes-deployment-webhook/badge.svg?branch=master)](https://coveralls.io/github/goci-io/kubernetes-deployment-webhook?branch=master)
 
 **Maintained by [@goci-io/prp-kubernetes](https://github.com/orgs/goci-io/teams/prp-kubernetes)**
 
