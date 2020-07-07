@@ -27,6 +27,7 @@ type DeploymentJob struct {
 	ServiceAccount string
 	Annotations map[string]string
 	Labels map[string]string
+	SecretEnvName string
 }
 
 type KubernetesClient struct {
@@ -104,7 +105,7 @@ func (client *KubernetesClient) CreateJob(job *DeploymentJob) error {
 								{
 									SecretRef: &corev1.SecretEnvSource{
 										LocalObjectReference: corev1.LocalObjectReference{
-											Name: job.Name,
+											Name: job.SecretEnvName,
 										},
 									},
 								},

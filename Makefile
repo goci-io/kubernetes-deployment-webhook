@@ -11,3 +11,6 @@ run:
 
 tests:
 	go test github.com/goci-io/deployment-webhook/cmd/server/...
+
+coverage:
+	go test -v -coverprofile=profile.cov github.com/goci-io/deployment-webhook/cmd/server/...

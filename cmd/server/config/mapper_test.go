@@ -12,7 +12,7 @@ func TestMapperCreatesRepositoryConfigs(t *testing.T) {
 		t.Error("expected no error, got " + err.Error())
 	}
 
-	if cc := len(mapper.Configs); cc != 1 {
+	if cc := len(mapper.configs); cc != 1 {
 		t.Errorf("expected one repository config got %d", cc)
 	}
 
@@ -24,7 +24,7 @@ func TestMapperCreatesRepositoryConfigs(t *testing.T) {
 		Repository: "example-repository",
 	}
 
-	if !expected.Equals(repo) {
+	if !expected.equals(repo) {
 		t.Errorf("expected %v, got %v", expected, repo)
 	}
 }
