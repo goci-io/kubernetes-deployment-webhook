@@ -5,10 +5,11 @@ import (
 )
 
 type KiamConigEnhancer struct {
-	RoleName 	string
-	ExternalId 	string
-	AccountId	string
-	Partition	string
+	RoleName string		`yaml:"roleName"`
+	ExternalId string	`yaml:"externalId"`
+	AccountId string	`yaml:"accountId"`
+	Partition string	`yaml:"partition"`
+	KeySuffix string	`yaml:"keySuffix"`
 }
 
 func (enhancer *KiamConigEnhancer) Enhance(config *JobConfig) {
@@ -16,4 +17,11 @@ func (enhancer *KiamConigEnhancer) Enhance(config *JobConfig) {
 
 	config.Annotations["iam.amazonaws.com/role"] = role
 	config.Annotations["iam.amazonaws.com/external-id"] = enhancer.ExternalId
+}
+
+func (enhancer *KiamConigEnhancer) Key() string {
+	if enhancer.KeySuffix != "" {
+		return "aws-kiam-" + enhancer.KeySuffix
+	}
+	return "aws-kiam"
 }

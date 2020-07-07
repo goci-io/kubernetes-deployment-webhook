@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"github.com/goci-io/deployment-webhook/cmd/server/config"
 	"github.com/goci-io/deployment-webhook/cmd/server/clients"
+	"github.com/goci-io/deployment-webhook/cmd/server/providers"
 )
 
 const (
@@ -28,17 +29,21 @@ func main() {
 		log.Fatal("missing required webhook sercret")
 	}
 
+	initRandom()
+
 	k8sClient := &clients.KubernetesClient{}
 	k8sClient.Init()
 
 	config := &config.DeploymentsConfig{}
 	config.LoadAndParse(getEnv("REPO_CONFIG_FILE", "/run/config/repos.yaml"))
 
+	providers.LoadAndParse(getEnv("PROVIDERS_CONFIG_FILE", "/run/config/providers.yaml"))
+
 	mux := http.NewServeMux()
 	mux.Handle("/event", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		deployment := &Deployment{
-			Kubernetes: *k8sClient,
-			Configs: *config,
+			kubernetes: k8sClient,
+			configs: *config,
 		}
 
 		webhook, code, err := validateAndParseRequest(r, handler, deployment)

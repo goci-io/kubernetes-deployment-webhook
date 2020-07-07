@@ -117,12 +117,3 @@ func signBody(secret, body []byte) []byte {
 	computed.Write(body)
 	return []byte(computed.Sum(nil))
 }
-
-func contains(arr []string, search string) bool {
-    for _, n := range arr {
-        if search == n {
-            return true
-        }
-    }
-    return false
-}

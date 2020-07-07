@@ -1,0 +1,6 @@
+- externalId: AvoidConfusedDeputyProblem
+  roleName: goci-build-app-role
+  accountId: 123456789012
+  partition: aws
+  keySuffix: goci-app
+  provider: aws-kiam
