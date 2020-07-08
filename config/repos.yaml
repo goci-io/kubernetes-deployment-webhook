@@ -1,5 +1,5 @@
 - organization: goci-io
-  repository: example-repository
+  repository: goci-repository-setup-example
   image: repo/image:tag
   serviceAccount: default
   namespace: default

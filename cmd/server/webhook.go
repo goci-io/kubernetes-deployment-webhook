@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"io/ioutil"
 	"encoding/json"
+
+	"github.com/goci-io/deployment-webhook/cmd/server/providers"
 )
 
 const (
@@ -37,6 +39,7 @@ type WebhookHandler struct {
 	gitHost string
 	kubernetes KubernetesClient
 	organizationWhitelist []string
+	enhancers []providers.ConfigEnhancer
 }
 
 func (handler *WebhookHandler) handle(w http.ResponseWriter, r *http.Request) {
@@ -61,6 +64,7 @@ func (handler *WebhookHandler) handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	deployment := &Deployment{
+		enhancers: handler.enhancers,
 		kubernetes: handler.kubernetes,
 	}
 
