@@ -6,6 +6,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var configs = make(map[string]RepositoryConfig)
+
 type RepositoryConfig struct {
 	Organization string		`yaml:"organization"`
 	Repository string		`yaml:"repository"`
@@ -22,33 +24,28 @@ func (config *RepositoryConfig) equals(other RepositoryConfig) bool {
 		config.Image == other.Image
 }
 
-type DeploymentsConfig struct {
-	configs map[string]RepositoryConfig
-}
-
-func (config *DeploymentsConfig) LoadAndParse(path string) error {
+func LoadAndParse(path string) error {
 	yamlFile, err := ioutil.ReadFile(path)
     if err != nil {
         return err
 	}
 
-	configs := []RepositoryConfig{}
-	err = yaml.Unmarshal(yamlFile, &configs)
+	repos := []RepositoryConfig{}
+	err = yaml.Unmarshal(yamlFile, &repos)
     if err != nil {
 		return err
 	}
-	
-	config.configs = make(map[string]RepositoryConfig)
-	for i := 0; i < len(configs); i++ {
-		repoConfig := configs[i]
+
+	for i := 0; i < len(repos); i++ {
+		repoConfig := repos[i]
 		key := fmt.Sprintf("%s/%s", repoConfig.Organization, repoConfig.Repository)
-		config.configs[key] = repoConfig
+		configs[key] = repoConfig
 	}
 
 	return nil
 }
 
-func (config *DeploymentsConfig) GetForRepo(organization string, repository string) RepositoryConfig {
+func GetForRepo(organization string, repository string) RepositoryConfig {
 	key := fmt.Sprintf("%s/%s", organization, repository)
-	return config.configs[key]
+	return configs[key]
 }

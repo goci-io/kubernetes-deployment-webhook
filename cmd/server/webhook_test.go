@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"strings"
 	"testing"
 	"net/http"
+	"io/ioutil"
 	"encoding/hex"
 	httptest "net/http/httptest"
 )
@@ -49,7 +51,6 @@ func TestWebhookValidateRequestRejectsMissingSignature(t *testing.T) {
 		t.Error("expected invalid request content error")
 	}
 
-	req.Header.Add("x-github-delivery", "x")
 	req.Header.Add("x-github-event", "y")
 	_, _, err = handler.validateRequest(req)
 	if err == nil || err.Error() != "missing github event signature, webhook event, id or signature is invalid" {
@@ -58,9 +59,6 @@ func TestWebhookValidateRequestRejectsMissingSignature(t *testing.T) {
 
 	req.Header.Add("x-hub-signature", "sig")
 	_, code, err = handler.validateRequest(req)
-	if err == nil || err.Error() != "missing github event signature, webhook event, id or signature is invalid" {
-		t.Error("expected invalid request content error")
-	}
 
 	if code != http.StatusBadRequest {
 		t.Errorf("expected %d, got %d", http.StatusBadRequest, code)
@@ -70,6 +68,7 @@ func TestWebhookValidateRequestRejectsMissingSignature(t *testing.T) {
 func TestWebhookValidateRequestSucceeds(t *testing.T) {
 	payload := "request payload"
 	secret := "secret"
+
 	signatureHmac := signBody([]byte(secret), []byte(payload))
 	signature := make([]byte, hex.EncodedLen(len(signatureHmac)))
 	hex.Encode(signature, signatureHmac)
@@ -79,10 +78,9 @@ func TestWebhookValidateRequestSucceeds(t *testing.T) {
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("x-github-event", "ping")
 	req.Header.Add("x-hub-signature", "sha1=" + string(signature))
-	req.Header.Add("x-github-delivery", "f155be00-b701-11ea-97da-4470faac803a")
 
 	handler := &WebhookHandler{
-		Secret: []byte("secret"),
+		secret: []byte(secret),
 	}
 
 	body, code, err := handler.validateRequest(req)
@@ -92,7 +90,7 @@ func TestWebhookValidateRequestSucceeds(t *testing.T) {
 
 	parsedBody := string(body[:len(body)])
 	if parsedBody != payload {
-		t.Error("wrong content received")
+		t.Error("wrong content received, got " + parsedBody)
 	}
 
 	if code != http.StatusAccepted {
@@ -103,11 +101,11 @@ func TestWebhookValidateRequestSucceeds(t *testing.T) {
 func TestWebhookParseMapsPayloadToWebhookContext(t *testing.T) {
 	ctx := &WebhookContext{}
 	handler := &WebhookHandler{}
-	payload := []byte("{\"organization\":\"goci-io\",\"action\":\"published\",\"repository\":{\"fork\":true,\"private\":false}}")
+	payload := []byte("{\"action\":\"published\",\"repository\":{\"organization\":\"goci-io\",\"fork\":true,\"private\":false}}")
 
 	handler.parse(payload, ctx)
 
-	if ctx.Organization != "goci-io" {
+	if ctx.Repository.Organization != "goci-io" {
 		t.Error("expected goci-io as organization")
 	}
 
@@ -122,19 +120,36 @@ func TestWebhookParseMapsPayloadToWebhookContext(t *testing.T) {
 
 func TestWebhookIsEligibleForNonWhitelistedOrgFails(t *testing.T) {
 	handler := &WebhookHandler{
-		OrganizationWhitelist: []string{"goci-io", "goci-io-dev"},
+		organizationWhitelist: []string{"goci-io", "goci-io-dev"},
 	}
 
 	webhook := &WebhookContext{
 		Action: "published",
 		Release: &Release{},
-		Repository: &Repository{},
-		Organization: "another-org",
+		Repository: &Repository{
+			Organization: "another-org",
+		},
 	}
 
 	eligible := handler.isEligible(webhook)
 
 	if eligible {
 		t.Error("expected another-org to be ineligible as its not a whitelisted org")
+	}
+}
+
+func TestFailRequestSendsErrorAndHttpStatusCode(t *testing.T) {
+	w := httptest.NewRecorder()
+	failRequest(w, 400, errors.New("some error"))
+
+	resp := w.Result()
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode != 400 {
+		t.Errorf("expected status code 400, got %d", resp.StatusCode)
+	}
+
+	if string(body) != "some error" {
+		t.Error("expected error to be passed to the client")
 	}
 }

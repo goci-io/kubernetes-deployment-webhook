@@ -5,18 +5,13 @@ import (
 )
 
 func TestMapperCreatesRepositoryConfigs(t *testing.T) {
-	mapper := &DeploymentsConfig{}
-	err := mapper.LoadAndParse("../../../config/example.yaml")
+	err := LoadAndParse("../../../config/example.yaml")
 
 	if err != nil {
 		t.Error("expected no error, got " + err.Error())
 	}
 
-	if cc := len(mapper.configs); cc != 1 {
-		t.Errorf("expected one repository config got %d", cc)
-	}
-
-	repo := mapper.GetForRepo("goci-io", "example-repository")
+	repo := GetForRepo("goci-io", "example-repository")
 	expected := &RepositoryConfig{
 		Namespace: "default",
 		Organization: "goci-io",

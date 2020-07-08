@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"log"
-	"errors"
 	"strings"
 	"net/http"
 	"path/filepath"
@@ -19,41 +18,27 @@ const (
 )
 
 func main() {
-	handler := &WebhookHandler{
-		GitHost: getEnv("GIT_HOST", "github.com"),
-		Secret: []byte(os.Getenv("WEBHOOK_SECRET")),
-		OrganizationWhitelist: strings.Split(os.Getenv("ORGANIZATION_WHITELIST"), ","),
+	k8sClient := &clients.KubernetesClient{}
+	k8sClient.Init()
+
+	webhook := &WebhookHandler{
+		kubernetes: k8sClient,
+		gitHost: getEnv("GIT_HOST", "github.com"),
+		secret: []byte(os.Getenv("WEBHOOK_SECRET")),
+		organizationWhitelist: strings.Split(os.Getenv("ORGANIZATION_WHITELIST"), ","),
 	}
 
-	if len(handler.Secret) == 0 {
+	if len(webhook.secret) == 0 {
 		log.Fatal("missing required webhook sercret")
 	}
 
 	initRandom()
 
-	k8sClient := &clients.KubernetesClient{}
-	k8sClient.Init()
-
-	config := &config.DeploymentsConfig{}
 	config.LoadAndParse(getEnv("REPO_CONFIG_FILE", "/run/config/repos.yaml"))
-
 	providers.LoadAndParse(getEnv("PROVIDERS_CONFIG_FILE", "/run/config/providers.yaml"))
 
 	mux := http.NewServeMux()
-	mux.Handle("/event", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		deployment := &Deployment{
-			kubernetes: k8sClient,
-			configs: *config,
-		}
-
-		webhook, code, err := validateAndParseRequest(r, handler, deployment)
-
-		if err != nil && code > 399 {
-			failRequest(w, code, err)
-		} else {
-			succeedRequest(w, webhook, code)
-		}
-	}))
+	mux.Handle("/event", http.HandlerFunc(webhook.handle))
 
 	server := &http.Server{
 		Addr:    ":8443",
@@ -63,50 +48,4 @@ func main() {
 	certPath := filepath.Join(tlsDir, tlsCertFile)
 	keyPath := filepath.Join(tlsDir, tlsKeyFile)
 	log.Fatal(server.ListenAndServeTLS(certPath, keyPath))
-}
-
-func validateAndParseRequest(r *http.Request, handler *WebhookHandler, deployment *Deployment) (*WebhookContext, int, error) {
-	log.Print("Handling webhook request ...")
-
-	webhook := &WebhookContext{}
-	body, code, err := handler.validateRequest(r);
-	if err != nil {
-		return webhook, code, err
-	}
-
-	webhook, err = handler.parse(body, webhook)
-	if err != nil {
-		return webhook, code, err
-	}
-
-	if !handler.isEligible(webhook) {
-		return webhook, http.StatusOK, errors.New("webhook is not eligible for processing")
-	}
-
-	return webhook, http.StatusAccepted, nil
-}
-
-func succeedRequest(w http.ResponseWriter, webhook *WebhookContext, code int) {
-	log.Printf("Webhook request handled successfully: %v", webhook)
-	w.WriteHeader(code)
-}
-
-func failRequest(w http.ResponseWriter, code int, err error) {
-	log.Printf("Error handling webhook request: %v", err)
-
-	w.WriteHeader(code)
-	_, writeErr := w.Write([]byte(err.Error()))
-
-	if writeErr != nil {
-		log.Printf("Could not write response: %v", writeErr)
-	}
-}
-
-func getEnv(name string, fallback string) string {
-	env := os.Getenv(name)
-	if len(env) == 0 {
-		return fallback
-	}
-
-	return env
 }

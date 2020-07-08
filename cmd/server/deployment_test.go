@@ -24,8 +24,8 @@ func TestReleaseCallsKubernetesClientWithCorrectJobName(t *testing.T) {
 	}
 
 	ctx := &WebhookContext{
-		Organization: "goci-io",
 		Repository: &Repository{
+			Organization: "goci-io",
 			Name: "example",
 		},
 	}

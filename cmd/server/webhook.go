@@ -2,13 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"errors"
 	"strings"
 	"net/http"
 	"io/ioutil"
-	"crypto/hmac"
-	"crypto/sha1"
-	"encoding/hex"
 	"encoding/json"
 )
 
@@ -21,42 +19,57 @@ type Release struct {
 }
 
 type Repository struct {
-	Name string		`json:"name"`
-	Fork bool		`json:"fork"`
-	Private bool 	`json:"private"`
+	Name string				`json:"name"`
+	Fork bool				`json:"fork"`
+	Private bool 			`json:"private"`
+	Organization string    	`json:"organization"`
 }
 
 type WebhookContext struct {
 	Action string 		   `json:"action"`
 	Repository *Repository `json:"repository"`
-	Organization string    `json:"organization"`
 	Reference string	   `json:"ref,omitempty"`
 	Release *Release       `json:"release,omitempty"`
 }
 
 type WebhookHandler struct {
-	Secret []byte
-	GitHost string
-	OrganizationWhitelist []string
+	secret []byte
+	gitHost string
+	kubernetes KubernetesClient
+	organizationWhitelist []string
 }
 
-func (handler *WebhookHandler) isEligible(webhook *WebhookContext) bool {
-	isRelease := webhook.Action == "published" && webhook.Release != nil
-	isMasterMerge := len(webhook.Reference) > 0 && strings.HasSuffix(webhook.Reference, "/master")
+func (handler *WebhookHandler) handle(w http.ResponseWriter, r *http.Request) {
+	log.Print("Handling webhook request ...")
 
-	if !isRelease && !isMasterMerge {
-		return false
+	webhook := &WebhookContext{}
+	body, code, err := handler.validateRequest(r);
+	if err != nil {
+		failRequest(w, code, err)
+		return
 	}
 
-	if webhook.Repository == nil || webhook.Repository.Private || webhook.Repository.Fork {
-		return false
+	webhook, err = handler.parse(body, webhook)
+	if err != nil {
+		failRequest(w, http.StatusBadRequest, err)
+		return
 	}
 
-	if !contains(handler.OrganizationWhitelist, webhook.Organization) {
-		return false
+	if !handler.isEligible(webhook) {
+		succeedRequest(w, http.StatusOK)
+		return 
 	}
 
-	return true
+	deployment := &Deployment{
+		kubernetes: handler.kubernetes,
+	}
+
+	err = deployment.release(webhook)
+	if err != nil {
+		failRequest(w, 500, err)
+	} else {
+		succeedRequest(w, code)
+	}
 }
 
 func (handler *WebhookHandler) validateRequest(r *http.Request) ([]byte, int, error) {
@@ -73,12 +86,15 @@ func (handler *WebhookHandler) validateRequest(r *http.Request) ([]byte, int, er
 		return nil, http.StatusBadRequest, fmt.Errorf("could not read request body: %v", err)
 	}
 
-	delivery := r.Header.Get("x-github-delivery")
 	signature := r.Header.Get("x-hub-signature")
 	event := r.Header.Get("x-github-event")
 
-	if len(signature) == 0 || len(event) == 0 || len(delivery) == 0 || !verifySignature(handler.Secret, signature, body) {
-		return nil, http.StatusBadRequest, errors.New("missing github event signature, webhook event, id or signature is invalid")
+	if len(signature) == 0 || len(event) == 0 {
+		return body, http.StatusBadRequest, errors.New("missing github event signature, webhook event, id or signature is invalid")
+	}
+
+	if !verifySignature(handler.secret, signature, body) {
+		return body, http.StatusBadRequest, errors.New("invalid webhook signature")
 	}
 
 	return body, http.StatusAccepted, nil
@@ -91,29 +107,43 @@ func (handler *WebhookHandler) parse(body []byte, into *WebhookContext) (*Webhoo
 
 	err := json.Unmarshal(body, into)
 	if err != nil {
-		return into, errors.New("invalid request, could not parse webhook object")
+		return into, errors.New("invalid request, could not parse webhook object: " + err.Error())
 	}
 
 	return into, nil
 }
 
-// https://gist.github.com/rjz/b51dc03061dbcff1c521
-func verifySignature(secret []byte, signature string, body []byte) bool {
-	const signaturePrefix = "sha1="
-	const signatureLength = 45 // len(SignaturePrefix) + len(hex(sha1))
+func (handler *WebhookHandler) isEligible(webhook *WebhookContext) bool {
+	isRelease := webhook.Action == "published" && webhook.Release != nil
+	isMasterMerge := len(webhook.Reference) > 0 && strings.HasSuffix(webhook.Reference, "/master")
 
-	if len(signature) != signatureLength || !strings.HasPrefix(signature, signaturePrefix) {
+	if !isRelease && !isMasterMerge {
 		return false
 	}
 
-	actual := make([]byte, 20)
-	hex.Decode(actual, []byte(signature[5:]))
+	if webhook.Repository == nil || webhook.Repository.Private || webhook.Repository.Fork {
+		return false
+	}
 
-	return hmac.Equal(signBody(secret, body), actual)
+	if !contains(handler.organizationWhitelist, webhook.Repository.Organization) {
+		return false
+	}
+
+	return true
 }
 
-func signBody(secret, body []byte) []byte {
-	computed := hmac.New(sha1.New, secret)
-	computed.Write(body)
-	return []byte(computed.Sum(nil))
+func succeedRequest(w http.ResponseWriter, code int) {
+	log.Print("Webhook request handled successfully")
+	w.WriteHeader(code)
+}
+
+func failRequest(w http.ResponseWriter, code int, err error) {
+	log.Printf("Error handling webhook request: %v", err)
+
+	w.WriteHeader(code)
+	_, writeErr := w.Write([]byte(err.Error()))
+
+	if writeErr != nil {
+		log.Printf("Could not write response: %v", writeErr)
+	}
 }
