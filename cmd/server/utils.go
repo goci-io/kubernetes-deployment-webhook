@@ -5,9 +5,9 @@ import (
     "time"
     "strings"
     "math/rand"
-	"crypto/hmac"
-	"crypto/sha1"
-	"encoding/hex"
+    "crypto/hmac"
+    "crypto/sha1"
+    "encoding/hex"
 )
 
 const (

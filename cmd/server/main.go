@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 	"net/http"
-	//"path/filepath"
+	"path/filepath"
 	"github.com/goci-io/deployment-webhook/cmd/server/config"
 	"github.com/goci-io/deployment-webhook/cmd/server/clients"
 	"github.com/goci-io/deployment-webhook/cmd/server/providers"
@@ -45,7 +45,7 @@ func main() {
 		Handler: mux,
 	}
 
-	//certPath := filepath.Join(tlsDir, tlsCertFile)
-	//keyPath := filepath.Join(tlsDir, tlsKeyFile)
-	log.Fatal(server.ListenAndServe())
+	certPath := filepath.Join(tlsDir, tlsCertFile)
+	keyPath := filepath.Join(tlsDir, tlsKeyFile)
+	log.Fatal(server.ListenAndServeTLS(certPath, keyPath))
 }
