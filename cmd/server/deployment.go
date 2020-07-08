@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"github.com/goci-io/deployment-webhook/cmd/server/providers"
 	"github.com/goci-io/deployment-webhook/cmd/server/clients"
 	"github.com/goci-io/deployment-webhook/cmd/server/config"
@@ -20,14 +21,13 @@ type KubernetesClient interface {
 type Deployment struct {
 	failureInformer Informer
 	successInformer Informer
-	configs config.DeploymentsConfig
 	kubernetes KubernetesClient
 	enhancers []providers.ConfigEnhancer
 }
 
 func (d *Deployment) release(context *WebhookContext) error {
-	config := d.configs.GetForRepo(context.Organization, context.Repository.Name)
-	jobName := fmt.Sprintf("%s-%s-%s", context.Organization, context.Repository.Name, randStringBytes(6))
+	config := config.GetForRepo(context.Repository.Organization, context.Repository.Name)
+	jobName := fmt.Sprintf("%s-%s-%s", context.Repository.Organization, context.Repository.Name, randStringBytes(6))
 	job := &clients.DeploymentJob{Name: jobName}
 	copyConfigInto(config, job)
 
@@ -47,6 +47,7 @@ func (d *Deployment) release(context *WebhookContext) error {
 	mergeMap(job.Labels, pd.Labels);
 	mergeMap(job.Annotations, pd.Annotations);
 
+	log.Printf("deploying job %v", d.kubernetes.CreateJob(job))
 	return d.kubernetes.CreateJob(job)
 }
 

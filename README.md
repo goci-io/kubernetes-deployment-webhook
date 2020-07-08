@@ -77,11 +77,56 @@ extraVolumes:
 - name: tls
   secret:
     defaultMode: 0600
-    secretName: event-dispatcher-tls
+    secretName: k8s-deployment-webhook-tls
 ```
 
 ### Tests
 
 Run Tests using `make tests`.
+
+To test for example Changes to this Application locally you can build the Binary and run the App locally using `test` as `WEBHOOK_SECRET`. You will also need to specify the following Headers:
+```
+x-hub-signature: sha1=9520013b664c4c1551722986a78c53cd39dae6a9
+x-github-event: push
+```
+
+<details><summary>Example Webhook Payload</summary>
+```json
+{
+  "ref": "refs/heads/etwillbefine-patch-1",
+  "repository": {
+    "name": "goci-setup",
+    "full_name": "goci-io/goci-setup",
+    "private": true,
+    "owner": {
+      "name": "goci-io",
+      "email": "support@goci.io",
+      "login": "goci-io",
+      "url": "https://api.github.com/users/goci-io",
+      "type": "Organization"
+    },
+    "fork": false,
+    "url": "https://github.com/goci-io/goci-setup",
+    "git_url": "git://github.com/goci-io/goci-setup.git",
+    "ssh_url": "git@github.com:goci-io/goci-setup.git",
+    "clone_url": "https://github.com/goci-io/goci-setup.git",
+    "default_branch": "master",
+    "master_branch": "master",
+    "organization": "goci-io"
+  },
+  "pusher": {
+    "name": "etwillbefine",
+    "email": "etwillbefine@users.noreply.github.com"
+  },
+  "organization": {
+    "login": "goci-io",
+    "url": "https://api.github.com/orgs/goci-io",
+    "repos_url": "https://api.github.com/orgs/goci-io/repos",
+    "events_url": "https://api.github.com/orgs/goci-io/events",
+    "hooks_url": "https://api.github.com/orgs/goci-io/hooks"
+  }
+}
+```
+</details>
 
 _This repository was created via [github-repository](https://github.com/goci-io/github-repository)._
