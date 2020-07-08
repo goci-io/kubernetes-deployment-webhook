@@ -84,20 +84,21 @@ extraVolumes:
 
 Run Tests using `make tests`.
 
-To test for example Changes to this Application locally you can build the Binary and run the App locally using `test` as `WEBHOOK_SECRET`. You will also need to specify the following Headers:
+To run this Application locally you need to build the Binary (see above) and run the App locally. To start the Application you can use `make run/local` which creates all necessary environment variables and default configurations (can be found [here](config/)). You will also need to specify the following Headers in your Requests:
 ```
-x-hub-signature: sha1=9520013b664c4c1551722986a78c53cd39dae6a9
+x-hub-signature: sha1=37df8bce63ad1e1acc699d9575afabc3de2ff9ac
 x-github-event: push
 ```
 
 <details><summary>Example Webhook Payload</summary>
+
 ```json
 {
-  "ref": "refs/heads/etwillbefine-patch-1",
+  "ref": "refs/heads/master",
   "repository": {
-    "name": "goci-setup",
-    "full_name": "goci-io/goci-setup",
-    "private": true,
+    "name": "goci-repository-setup-example",
+    "full_name": "goci-io/goci-repository-setup-example",
+    "private": false,
     "owner": {
       "name": "goci-io",
       "email": "support@goci.io",
@@ -106,10 +107,10 @@ x-github-event: push
       "type": "Organization"
     },
     "fork": false,
-    "url": "https://github.com/goci-io/goci-setup",
-    "git_url": "git://github.com/goci-io/goci-setup.git",
-    "ssh_url": "git@github.com:goci-io/goci-setup.git",
-    "clone_url": "https://github.com/goci-io/goci-setup.git",
+    "url": "https://github.com/goci-io/goci-repository-setup-example",
+    "git_url": "git://github.com/goci-io/goci-repository-setup-example.git",
+    "ssh_url": "git@github.com:goci-io/goci-repository-setup-example.git",
+    "clone_url": "https://github.com/goci-io/goci-repository-setup-example.git",
     "default_branch": "master",
     "master_branch": "master",
     "organization": "goci-io"
