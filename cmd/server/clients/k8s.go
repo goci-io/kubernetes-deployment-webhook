@@ -3,6 +3,7 @@ package clients
 import (
 	"os"
 	"flag"
+	"strings"
 	"path/filepath"
 
 	//"k8s.io/apimachinery/pkg/api/errors"
@@ -21,8 +22,6 @@ type DeploymentJob struct {
 	TTL  int32
 	Image string
 	Namespace string
-	MaxCPU int64
-	MaxMemory int64
 	Data interface{}
 	ServiceAccount string
 	Annotations map[string]string
@@ -64,9 +63,11 @@ func (client *KubernetesClient) Init() error {
 }
 
 func (client *KubernetesClient) CreateJob(job *DeploymentJob) error {
+	name := strings.ToLower(job.Name)
+
 	manifest := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: job.Name,
+			Name: name,
 			Labels: job.Labels,
 			Annotations: job.Annotations,
 		},
@@ -80,6 +81,7 @@ func (client *KubernetesClient) CreateJob(job *DeploymentJob) error {
 					Annotations: job.Annotations,
 				},
 				Spec: corev1.PodSpec{
+					RestartPolicy: "Never",
 					ServiceAccountName: job.ServiceAccount,
 					TerminationGracePeriodSeconds: create64(100),
 					SecurityContext: &corev1.PodSecurityContext{
@@ -89,16 +91,16 @@ func (client *KubernetesClient) CreateJob(job *DeploymentJob) error {
 					},
 					Containers: []corev1.Container{
 						{
-							Name: job.Name,
+							Name: name,
 							Image: job.Image,
 							Resources: corev1.ResourceRequirements{
 								Requests: corev1.ResourceList{
-									corev1.ResourceCPU: *resource.NewQuantity(200, resource.DecimalSI),
-									corev1.ResourceMemory: *resource.NewQuantity(128, resource.BinarySI),
+									corev1.ResourceCPU: *resource.NewQuantity(300, resource.DecimalSI),
+									corev1.ResourceMemory: *resource.NewQuantity(156, resource.BinarySI),
 								},
 								Limits: corev1.ResourceList{
-									corev1.ResourceCPU: *resource.NewQuantity(job.MaxCPU, resource.DecimalSI),
-									corev1.ResourceMemory: *resource.NewQuantity(job.MaxMemory, resource.BinarySI),
+									corev1.ResourceCPU: *resource.NewQuantity(300, resource.DecimalSI),
+									corev1.ResourceMemory: *resource.NewQuantity(156, resource.BinarySI),
 								},
 							},
 							EnvFrom: []corev1.EnvFromSource{
