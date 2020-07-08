@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"strings"
 	"testing"
 	"net/http"
+	"io/ioutil"
 	"encoding/hex"
 	httptest "net/http/httptest"
 )
@@ -133,5 +135,21 @@ func TestWebhookIsEligibleForNonWhitelistedOrgFails(t *testing.T) {
 
 	if eligible {
 		t.Error("expected another-org to be ineligible as its not a whitelisted org")
+	}
+}
+
+func TestFailRequestSendsErrorAndHttpStatusCode(t *testing.T) {
+	w := httptest.NewRecorder()
+	failRequest(w, 400, errors.New("some error"))
+
+	resp := w.Result()
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode != 400 {
+		t.Errorf("expected status code 400, got %d", resp.StatusCode)
+	}
+
+	if string(body) != "some error" {
+		t.Error("expected error to be passed to the client")
 	}
 }
