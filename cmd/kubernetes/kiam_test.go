@@ -1,11 +1,11 @@
-package providers
+package k8s
 
 import (
 	"testing"
 )
 
 func TestKiamEnhancerAppendsIAMAnnotations(t *testing.T) {
-	job := &JobConfig{Annotations: make(map[string]string)}
+	job := &DeploymentJob{Annotations: make(map[string]string)}
 	enhancer := &KiamConigEnhancer{
 		Partition: "aws",
 		RoleName: "example",

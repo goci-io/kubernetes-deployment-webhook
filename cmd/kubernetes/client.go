@@ -1,4 +1,4 @@
-package clients
+package k8s
 
 import (
 	"os"
@@ -23,17 +23,19 @@ type DeploymentJob struct {
 	Image string
 	Namespace string
 	Data interface{}
+	Enhancers []string
 	ServiceAccount string
 	Annotations map[string]string
 	Labels map[string]string
 	SecretEnvName string
 }
 
-type KubernetesClient struct {
-	BatchV1 batchv1types.BatchV1Interface
+type Client struct {
+	enhancers []Enhancer
+	batchV1 batchv1types.BatchV1Interface
 }
 
-func (client *KubernetesClient) Init() error {
+func (client *Client) Init(enhancerConfigPath string) error {
 	var config *rest.Config
 	var err error
 
@@ -58,12 +60,21 @@ func (client *KubernetesClient) Init() error {
 		return err
 	}
 
-	client.BatchV1 = clientsets.BatchV1()
-	return nil
+	client.batchV1 = clientsets.BatchV1()
+	client.enhancers, err = loadAndParseEnhancers(enhancerConfigPath)
+	return err
 }
 
-func (client *KubernetesClient) CreateJob(job *DeploymentJob) error {
+func (client *Client) CreateJob(job *DeploymentJob) error {
 	name := strings.ToLower(job.Name)
+
+	for i := 0; i < len(client.enhancers); i++ {
+		enhancer := client.enhancers[i]
+
+		if contains(job.Enhancers, enhancer.Key()) {
+			enhancer.Enhance(job)
+		}
+	}
 
 	manifest := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -119,7 +130,7 @@ func (client *KubernetesClient) CreateJob(job *DeploymentJob) error {
 		},
 	}
 
-	_, err := client.BatchV1.Jobs(job.Namespace).Create(manifest)
+	_, err := client.batchV1.Jobs(job.Namespace).Create(manifest)
 	return err
 }
 
@@ -140,6 +151,15 @@ func InClusterAuthPossible() bool {
 	return os.Getenv("KUBERNETES_SERVICE_HOST") != "" &&
 		os.Getenv("KUBERNETES_SERVICE_PORT") != "" &&
 		err == nil && !fi.IsDir()
+}
+
+func contains(arr []string, search string) bool {
+    for _, n := range arr {
+        if search == n {
+            return true
+        }
+    }
+    return false
 }
 
 func homeDir() string {

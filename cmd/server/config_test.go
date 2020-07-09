@@ -1,17 +1,16 @@
-package config
+package main
 
 import (
 	"testing"
 )
 
 func TestMapperCreatesRepositoryConfigs(t *testing.T) {
-	err := LoadAndParse("../../../config/repos.yaml")
+	repos, err := LoadAndParseRepoConfig("../../config/repos.yaml")
 
 	if err != nil {
 		t.Error("expected no error, got " + err.Error())
 	}
 
-	repo := GetForRepo("goci-io", "goci-repository-setup-example")
 	expected := &RepositoryConfig{
 		Namespace: "default",
 		Organization: "goci-io",
@@ -19,6 +18,7 @@ func TestMapperCreatesRepositoryConfigs(t *testing.T) {
 		Repository: "goci-repository-setup-example",
 	}
 
+	repo := repos["goci-io/goci-repository-setup-example"]
 	if !expected.equals(repo) {
 		t.Errorf("expected %v, got %v", expected, repo)
 	}

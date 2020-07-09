@@ -1,4 +1,4 @@
-package providers
+package k8s
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ type KiamConigEnhancer struct {
 	KeySuffix string	`yaml:"keySuffix"`
 }
 
-func (enhancer *KiamConigEnhancer) Enhance(config *JobConfig) {
+func (enhancer *KiamConigEnhancer) Enhance(config *DeploymentJob) {
 	var role = fmt.Sprintf("arn:%s:iam::%s:role/%s", enhancer.Partition, enhancer.AccountId, enhancer.RoleName)
 
 	config.Annotations["iam.amazonaws.com/role"] = role

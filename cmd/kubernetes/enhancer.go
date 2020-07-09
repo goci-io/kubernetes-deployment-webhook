@@ -1,4 +1,4 @@
-package providers
+package k8s
 
 import (
 	"errors"
@@ -6,13 +6,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type JobConfig struct {
-	Annotations map[string]string
-	Labels map[string]string
-}
-
-type ConfigEnhancer interface {
-	Enhance(config *JobConfig)
+type Enhancer interface {
+	Enhance(config *DeploymentJob)
 	Key() string
 }
 
@@ -21,9 +16,9 @@ type ProviderConfig struct {
 	Config map[string]string	`yaml:",inline"`
 }
 
-func LoadAndParse(path string) ([]ConfigEnhancer, error) {
+func loadAndParseEnhancers(path string) ([]Enhancer, error) {
 	configs := []ProviderConfig{}
-	enhancers := []ConfigEnhancer{}
+	enhancers := []Enhancer{}
 
 	yamlFile, err := ioutil.ReadFile(path)
     if err != nil {
@@ -49,7 +44,7 @@ func LoadAndParse(path string) ([]ConfigEnhancer, error) {
 	return enhancers, nil
 }
 
-func unmarshalEnhancerAttributes(config *ProviderConfig, b []byte) (ConfigEnhancer, error) {
+func unmarshalEnhancerAttributes(config *ProviderConfig, b []byte) (Enhancer, error) {
 	switch config.Provider {
 	case "aws-kiam":
 		kiam := &KiamConigEnhancer{}

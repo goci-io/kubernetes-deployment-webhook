@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"io/ioutil"
 	"encoding/json"
-
-	"github.com/goci-io/deployment-webhook/cmd/server/providers"
 )
 
 const (
@@ -34,12 +32,17 @@ type WebhookContext struct {
 	Release *Release       `json:"release,omitempty"`
 }
 
+type VcsClient interface {
+	Signature(r *http.Request) string
+	Event(r *http.Request) string
+}
+
 type WebhookHandler struct {
 	secret []byte
 	gitHost string
-	kubernetes KubernetesClient
+	vcsClient VcsClient
+	deployments *DeploymentsHandler
 	organizationWhitelist []string
-	enhancers []providers.ConfigEnhancer
 }
 
 func (handler *WebhookHandler) handle(w http.ResponseWriter, r *http.Request) {
@@ -63,12 +66,7 @@ func (handler *WebhookHandler) handle(w http.ResponseWriter, r *http.Request) {
 		return 
 	}
 
-	deployment := &Deployment{
-		enhancers: handler.enhancers,
-		kubernetes: handler.kubernetes,
-	}
-
-	err = deployment.release(webhook)
+	err = handler.deployments.deploy(webhook)
 	if err != nil {
 		failRequest(w, 500, err)
 	} else {
@@ -90,11 +88,11 @@ func (handler *WebhookHandler) validateRequest(r *http.Request) ([]byte, int, er
 		return nil, http.StatusBadRequest, fmt.Errorf("could not read request body: %v", err)
 	}
 
-	signature := r.Header.Get("x-hub-signature")
-	event := r.Header.Get("x-github-event")
+	signature := handler.vcsClient.Signature(r)
+	event := handler.vcsClient.Event(r)
 
 	if len(signature) == 0 || len(event) == 0 {
-		return body, http.StatusBadRequest, errors.New("missing github event signature, webhook event, id or signature is invalid")
+		return body, http.StatusBadRequest, errors.New("missing webhook signature or event")
 	}
 
 	if !verifySignature(handler.secret, signature, body) {
