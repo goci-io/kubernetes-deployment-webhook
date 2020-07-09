@@ -16,7 +16,7 @@ type ProviderConfig struct {
 	Config map[string]string	`yaml:",inline"`
 }
 
-func LoadAndParseEnhancers(path string) ([]Enhancer, error) {
+func loadAndParseEnhancers(path string) ([]Enhancer, error) {
 	configs := []ProviderConfig{}
 	enhancers := []Enhancer{}
 

@@ -14,7 +14,7 @@ type RepositoryConfig struct {
 	ServiceAccount string	`yaml:"serviceAccount"`
 	Namespace string		`yaml:"namespace"`
 	Image string			`yaml:"image"`
-	Providers []string		`yaml:"providers"`
+	Enhancers []string		`yaml:"enhancers"`
 }
 
 func (config *RepositoryConfig) equals(other RepositoryConfig) bool {

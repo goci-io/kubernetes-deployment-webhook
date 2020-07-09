@@ -5,7 +5,6 @@ import (
 )
 
 type GithubProvider struct {
-	webhookSecret string
 }
 
 func (provider *GithubProvider) Signature(r *http.Request) string {

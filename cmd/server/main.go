@@ -18,41 +18,7 @@ const (
 
 func main() {
 	initRandom()
-
-	configPath := getEnv("CONFIG_DIR", "/run/config")
-	providersPath := configPath + "/providers.yaml"
-	reposPath := configPath + "/repos.yaml"
-
-	configs, err := LoadAndParseRepoConfig(reposPath)
-	if err != nil {
-		log.Fatal("failed loading repository configuration: " + err.Error())
-	}
-
-	enhancers, err := k8s.LoadAndParseEnhancers(providersPath)
-	if err != nil {
-		log.Fatal("failed loading providers configuration: " + err.Error())
-	}
-
-	k8sClient := &k8s.Client{}
-	k8sClient.Init()
-
-	deployments := &DeploymentsHandler{
-		configs: configs,
-		enhancers: enhancers,
-		kubernetes: k8sClient,
-	}
-
-	webhook := &WebhookHandler{
-		deployments: deployments,
-		vcsClient: &vcs.GithubProvider{},
-		gitHost: getEnv("GIT_HOST", "github.com"),
-		secret: []byte(os.Getenv("WEBHOOK_SECRET")),
-		organizationWhitelist: strings.Split(os.Getenv("ORGANIZATION_WHITELIST"), ","),
-	}
-
-	if len(webhook.secret) < 1 {
-		log.Fatal("missing required webhook sercret")
-	}
+	webhook := createHandler()
 
 	mux := http.NewServeMux()
 	mux.Handle("/event", http.HandlerFunc(webhook.handle))
@@ -70,4 +36,37 @@ func main() {
 		keyPath := filepath.Join(tlsDir, tlsKeyFile)
 		log.Fatal(server.ListenAndServeTLS(certPath, keyPath))
 	}
+}
+
+func createHandler() *WebhookHandler {
+	configPath := getEnv("CONFIG_DIR", "/run/config")
+	enhancersPath := configPath + "/enhancers.yaml"
+	reposPath := configPath + "/repos.yaml"
+
+	configs, err := LoadAndParseRepoConfig(reposPath)
+	if err != nil {
+		log.Fatal("failed loading repository configuration: " + err.Error())
+	}
+
+	k8sClient := &k8s.Client{}
+	k8sClient.Init(enhancersPath)
+
+	deployments := &DeploymentsHandler{
+		configs: configs,
+		kubernetes: k8sClient,
+	}
+
+	webhook := &WebhookHandler{
+		deployments: deployments,
+		vcsClient: &vcs.GithubProvider{},
+		gitHost: getEnv("GIT_HOST", "github.com"),
+		secret: []byte(os.Getenv("WEBHOOK_SECRET")),
+		organizationWhitelist: strings.Split(os.Getenv("ORGANIZATION_WHITELIST"), ","),
+	}
+
+	if len(webhook.secret) < 1 {
+		log.Fatal("missing required webhook sercret")
+	}
+
+	return webhook
 }

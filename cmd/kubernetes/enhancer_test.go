@@ -5,7 +5,7 @@ import (
 )
 
 func TestEnhancerLoadAndParseCreatesEnhancers(t *testing.T) {
-	enhancers, err := LoadAndParseEnhancers("../../config/providers.yaml")
+	enhancers, err := loadAndParseEnhancers("../../config/enhancers.yaml")
 
 	if err != nil {
 		t.Error("error loading providers config: " + err.Error())

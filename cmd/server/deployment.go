@@ -18,7 +18,6 @@ type KubernetesClient interface {
 type DeploymentsHandler struct {
 	failureInformer Informer
 	successInformer Informer
-	enhancers []k8s.Enhancer
 	kubernetes KubernetesClient
 	configs map[string]RepositoryConfig
 }
@@ -33,20 +32,14 @@ func (d *DeploymentsHandler) deploy(context *WebhookContext) error {
 		SecretEnvName: configName,
 	}
 
-	for i := 0; i < len(d.enhancers); i++ {
-		enhancer := d.enhancers[i]
-
-		if contains(config.Providers, enhancer.Key()) {
-			enhancer.Enhance(job)
-		}
-	}
-
 	copyConfigInto(config, job)
+
 	return d.kubernetes.CreateJob(job)
 }
 
 func copyConfigInto(config RepositoryConfig, into *k8s.DeploymentJob) {
 	into.Image = config.Image
+	into.Enhancers = config.Enhancers
 	into.Namespace = config.Namespace
 	into.ServiceAccount = config.ServiceAccount
 	into.Labels = make(map[string]string)
