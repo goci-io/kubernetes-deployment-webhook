@@ -6,9 +6,8 @@ import (
 	"strings"
 	"net/http"
 	"path/filepath"
-	"github.com/goci-io/deployment-webhook/cmd/server/config"
-	"github.com/goci-io/deployment-webhook/cmd/server/clients"
-	"github.com/goci-io/deployment-webhook/cmd/server/providers"
+	"github.com/goci-io/deployment-webhook/cmd/kubernetes"
+	"github.com/goci-io/deployment-webhook/cmd/server/vcs"
 )
 
 const (
@@ -24,21 +23,28 @@ func main() {
 	providersPath := configPath + "/providers.yaml"
 	reposPath := configPath + "/repos.yaml"
 
-	if err := config.LoadAndParse(reposPath); err != nil {
+	configs, err := LoadAndParseRepoConfig(reposPath)
+	if err != nil {
 		log.Fatal("failed loading repository configuration: " + err.Error())
 	}
 
-	enhancers, err := providers.LoadAndParse(providersPath)
+	enhancers, err := k8s.LoadAndParseEnhancers(providersPath)
 	if err != nil {
 		log.Fatal("failed loading providers configuration: " + err.Error())
 	}
 
-	k8sClient := &clients.KubernetesClient{}
+	k8sClient := &k8s.Client{}
 	k8sClient.Init()
 
-	webhook := &WebhookHandler{
+	deployments := &DeploymentsHandler{
+		configs: configs,
 		enhancers: enhancers,
 		kubernetes: k8sClient,
+	}
+
+	webhook := &WebhookHandler{
+		deployments: deployments,
+		vcsClient: &vcs.GithubProvider{},
 		gitHost: getEnv("GIT_HOST", "github.com"),
 		secret: []byte(os.Getenv("WEBHOOK_SECRET")),
 		organizationWhitelist: strings.Split(os.Getenv("ORGANIZATION_WHITELIST"), ","),

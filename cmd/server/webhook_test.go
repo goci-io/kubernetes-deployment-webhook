@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"encoding/hex"
 	httptest "net/http/httptest"
+
+	"github.com/goci-io/deployment-webhook/cmd/server/vcs"
 )
 
 func TestWebhookValidateRequestRejectsNonHttpPost(t *testing.T) {
@@ -44,16 +46,18 @@ func TestWebhookValidateRequestRejectsMissingSignature(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", reader)
 	req.Header.Add("Content-Type", "application/json")
 
-	handler := &WebhookHandler{}
-	_, code, err := handler.validateRequest(req)
+	handler := &WebhookHandler{
+		vcsClient: &vcs.GithubProvider{},
+	}
 
-	if err == nil || err.Error() != "missing github event signature, webhook event, id or signature is invalid" {
+	_, code, err := handler.validateRequest(req)
+	if err == nil || err.Error() != "missing webhook signature or event" {
 		t.Error("expected invalid request content error")
 	}
 
 	req.Header.Add("x-github-event", "y")
 	_, _, err = handler.validateRequest(req)
-	if err == nil || err.Error() != "missing github event signature, webhook event, id or signature is invalid" {
+	if err == nil || err.Error() != "missing webhook signature or event" {
 		t.Error("expected invalid request content error")
 	}
 
@@ -81,6 +85,7 @@ func TestWebhookValidateRequestSucceeds(t *testing.T) {
 
 	handler := &WebhookHandler{
 		secret: []byte(secret),
+		vcsClient: &vcs.GithubProvider{},
 	}
 
 	body, code, err := handler.validateRequest(req)

@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/goci-io/deployment-webhook/cmd/server/providers"
-	"github.com/goci-io/deployment-webhook/cmd/server/clients"
-	"github.com/goci-io/deployment-webhook/cmd/server/config"
+	"github.com/goci-io/deployment-webhook/cmd/kubernetes"
 )
 
 type MergeableMap map[string]string
@@ -14,50 +12,40 @@ type Informer interface {
 }
 
 type KubernetesClient interface {
-	CreateJob(job *clients.DeploymentJob) error
+	CreateJob(job *k8s.DeploymentJob) error
 }
 
-type Deployment struct {
+type DeploymentsHandler struct {
 	failureInformer Informer
 	successInformer Informer
+	enhancers []k8s.Enhancer
 	kubernetes KubernetesClient
-	enhancers []providers.ConfigEnhancer
+	configs map[string]RepositoryConfig
 }
 
-func (d *Deployment) release(context *WebhookContext) error {
-	config := config.GetForRepo(context.Repository.Organization, context.Repository.Name)
-	secretName := fmt.Sprintf("%s-%s", context.Repository.Organization, context.Repository.Name)
+func (d *DeploymentsHandler) deploy(context *WebhookContext) error {
 	jobName := fmt.Sprintf("%s-%s-%s", context.Repository.Organization, context.Repository.Name, randStringBytes(6))
+	configName := fmt.Sprintf("%s-%s", context.Repository.Organization, context.Repository.Name)
+	config := d.configs[configName]
 
-	job := &clients.DeploymentJob{Name: jobName, SecretEnvName: secretName}
-	copyConfigInto(config, job)
-
-	pd := &providers.JobConfig{
-		Labels: make(MergeableMap),
-		Annotations: make(MergeableMap),
+	job := &k8s.DeploymentJob{
+		Name: jobName,
+		SecretEnvName: configName,
 	}
 
 	for i := 0; i < len(d.enhancers); i++ {
 		enhancer := d.enhancers[i]
 
 		if contains(config.Providers, enhancer.Key()) {
-			enhancer.Enhance(pd)
+			enhancer.Enhance(job)
 		}
 	}
 
-	mergeMap(job.Labels, pd.Labels);
-	mergeMap(job.Annotations, pd.Annotations);
-
+	copyConfigInto(config, job)
 	return d.kubernetes.CreateJob(job)
 }
 
-func mergeMap(target MergeableMap, merge MergeableMap) {
-	for k, v := range merge {
-		target[k] = v
-	}
-}
-
-func copyConfigInto(config config.RepositoryConfig, into *clients.DeploymentJob) {
+func copyConfigInto(config RepositoryConfig, into *k8s.DeploymentJob) {
 	into.Image = config.Image
 	into.Namespace = config.Namespace
 	into.ServiceAccount = config.ServiceAccount

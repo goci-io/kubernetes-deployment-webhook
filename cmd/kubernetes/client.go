@@ -1,4 +1,4 @@
-package clients
+package k8s
 
 import (
 	"os"
@@ -29,11 +29,11 @@ type DeploymentJob struct {
 	SecretEnvName string
 }
 
-type KubernetesClient struct {
+type Client struct {
 	BatchV1 batchv1types.BatchV1Interface
 }
 
-func (client *KubernetesClient) Init() error {
+func (client *Client) Init() error {
 	var config *rest.Config
 	var err error
 
@@ -62,7 +62,7 @@ func (client *KubernetesClient) Init() error {
 	return nil
 }
 
-func (client *KubernetesClient) CreateJob(job *DeploymentJob) error {
+func (client *Client) CreateJob(job *DeploymentJob) error {
 	name := strings.ToLower(job.Name)
 
 	manifest := &batchv1.Job{

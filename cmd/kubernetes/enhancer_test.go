@@ -1,11 +1,11 @@
-package providers
+package k8s
 
 import (
 	"testing"
 )
 
 func TestEnhancerLoadAndParseCreatesEnhancers(t *testing.T) {
-	enhancers, err := LoadAndParse("../../../config/providers.yaml")
+	enhancers, err := LoadAndParseEnhancers("../../config/providers.yaml")
 
 	if err != nil {
 		t.Error("error loading providers config: " + err.Error())
@@ -20,7 +20,7 @@ func TestEnhancerLoadAndParseCreatesEnhancers(t *testing.T) {
 		t.Error("key suffix not correctly mapped. got: " + kiam.KeySuffix)
 	}
 
-	job := &JobConfig{
+	job := &DeploymentJob{
 		Annotations: make(map[string]string),
 	}
 

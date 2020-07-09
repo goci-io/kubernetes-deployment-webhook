@@ -4,13 +4,14 @@ import (
 	"errors"
 	"strings"
 	"testing"
-	"github.com/goci-io/deployment-webhook/cmd/server/clients"
+
+	"github.com/goci-io/deployment-webhook/cmd/kubernetes"
 )
 
 type KubernetesTestClient struct {
 }
 
-func (c *KubernetesTestClient) CreateJob(job *clients.DeploymentJob) error {
+func (c *KubernetesTestClient) CreateJob(job *k8s.DeploymentJob) error {
 	if !strings.HasPrefix(job.Name, "goci-io-example-") {
 		return errors.New("got invalid job name: " + job.Name)
 	}
@@ -19,7 +20,7 @@ func (c *KubernetesTestClient) CreateJob(job *clients.DeploymentJob) error {
 }
 
 func TestReleaseCallsKubernetesClientWithCorrectJobName(t *testing.T) {
-	d := &Deployment{
+	d := &DeploymentsHandler{
 		kubernetes: &KubernetesTestClient{},
 	}
 
@@ -30,7 +31,7 @@ func TestReleaseCallsKubernetesClientWithCorrectJobName(t *testing.T) {
 		},
 	}
 
-	err := d.release(ctx)
+	err := d.deploy(ctx)
 
 	if err != nil {
 		t.Error("deployment failed: " + err.Error())
