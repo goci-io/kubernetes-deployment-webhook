@@ -10,15 +10,16 @@ func TestEnhancerLoadAndParseCreatesEnhancers(t *testing.T) {
 	enhancers, err := loadAndParseEnhancers("../../config/enhancers.yaml")
 
 	if err != nil {
-		t.Error("error loading providers config: " + err.Error())
+		t.Error("error loading enhancer config: " + err.Error())
 	}
 
-	if len(enhancers) != 1 {
-		t.Error("expected exactly one example kiam provider to be configured")
+	if len(enhancers) != 2 {
+		t.Error("expected exactly two example enhancers to be configured")
 	}
 
-	kiam := enhancers[0].(*KiamConigEnhancer)
-	if kiam.KeySuffix != "goci-app" || kiam.Key() != "aws-kiam-goci-app" {
+	gp := enhancers[0].(*PullGitSourcesEnhancer)
+	kiam := enhancers[1].(*KiamConigEnhancer)
+	if gp.Key() != "git-pull" || kiam.KeySuffix != "goci-app" || kiam.Key() != "aws-kiam-goci-app" {
 		t.Error("key suffix not correctly mapped. got: " + kiam.KeySuffix)
 	}
 

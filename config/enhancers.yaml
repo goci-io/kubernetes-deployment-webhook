@@ -1,3 +1,4 @@
+- provider: git-pull
 - externalId: AvoidConfusedDeputyProblem
   roleName: goci-build-app-role
   accountId: 123456789012

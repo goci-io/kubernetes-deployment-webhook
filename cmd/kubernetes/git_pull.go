@@ -28,6 +28,15 @@ func (enhancer *PullGitSourcesEnhancer) EnhanceJob(job *batchv1.Job, d JobData) 
 	if job.Spec.Template.Spec.Volumes == nil {
 		job.Spec.Template.Spec.Volumes = []corev1.Volume{}
 	}
+	if job.Spec.Template.Spec.Containers[0].VolumeMounts == nil {
+		job.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{}
+	}
+
+	job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
+		Name: "sources",
+		ReadOnly: false,
+		MountPath: "/run/workspace",
+	})
 
 	pullCmd := fmt.Sprintf("git clone %s@%s:%s/%s.git",
 		enhancer.GitUser, enhancer.GitHost, data.Organization(), data.Repository())
