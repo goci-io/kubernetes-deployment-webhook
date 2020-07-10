@@ -45,4 +45,4 @@ func main() {
 The following Providers are available:
 
 1. [`aws-kiam`](kiam.go)
-1. [`git-pull`](pull_git_sources.go)
+1. [`git-pull`](git_pull.go)
