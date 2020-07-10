@@ -9,6 +9,7 @@ import (
 
 type Enhancer interface {
 	EnhanceJob(job *batchv1.Job)
+	SetDefaults()
 	Key() string
 }
 
@@ -39,6 +40,7 @@ func loadAndParseEnhancers(path string) ([]Enhancer, error) {
 			return enhancers, err
 		}
 
+		enhancer.SetDefaults()
 		enhancers = append(enhancers, enhancer)
 	}
 

@@ -26,3 +26,9 @@ func (enhancer *KiamConigEnhancer) Key() string {
 	}
 	return "aws-kiam"
 }
+
+func (enhancer *KiamConigEnhancer) SetDefaults() string {
+	if enhancer.Partition == "" {
+		enhancer.Partition = "aws"
+	}
+}

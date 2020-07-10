@@ -117,19 +117,6 @@ func (client *Client) CreateJob(job *DeploymentJob) error {
 							},
 						},
 					},
-					InitContainers: []corev1.Container{
-						{
-							Name: "pull-sources",
-							Image: "gocidocker/k8s-deploy-alpine:0.1.0",
-							Command: []string{},
-							Env: []corev1.EnvVar{
-								{
-									Name: "GIT_SSH_COMMAND",
-									Value: "ssh -i /run/secrets/git",
-								},
-							},
-						},
-					},
 				},
 			},
 		},
