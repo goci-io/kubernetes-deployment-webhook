@@ -33,10 +33,16 @@ func main() {
 
 ### Configuration
 ```yaml
-
 - externalId: AvoidConfusedDeputyProblem
   roleName: goci-build-app-role
   accountId: 123456789012
   provider: aws-kiam
 - ...
 ```
+
+### Enhancers
+
+The following Providers are available:
+
+1. [`aws-kiam`](kiam.go)
+1. [`git-pull`](pull_git_sources.go)

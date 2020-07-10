@@ -53,6 +53,10 @@ func unmarshalEnhancerAttributes(config *ProviderConfig, b []byte) (Enhancer, er
 		kiam := &KiamConigEnhancer{}
 		err := yaml.Unmarshal(b, kiam)
 		return kiam, err
+	case "git-pull":
+		gp := &PullGitSourcesEnhancer{}
+		err := yaml.Unmarshal(b, gp)
+		return gp, err
 	default:
 		return nil, errors.New("unknown provider " + config.Provider)
 	}
