@@ -2,6 +2,8 @@ package k8s
 
 import (
 	"testing"
+	batchv1 "k8s.io/api/batch/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestEnhancerLoadAndParseCreatesEnhancers(t *testing.T) {
@@ -20,11 +22,13 @@ func TestEnhancerLoadAndParseCreatesEnhancers(t *testing.T) {
 		t.Error("key suffix not correctly mapped. got: " + kiam.KeySuffix)
 	}
 
-	job := &DeploymentJob{
-		Annotations: make(map[string]string),
+	job := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Annotations: make(map[string]string),
+		},
 	}
 
-	kiam.Enhance(job)
+	kiam.EnhanceJob(job, nil)
 	expectedRole := "arn:aws:iam::123456789012:role/goci-build-app-role"
 
 	if job.Annotations["iam.amazonaws.com/role"] != expectedRole {

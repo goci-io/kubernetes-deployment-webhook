@@ -4,10 +4,12 @@ import (
 	"errors"
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
+	batchv1 "k8s.io/api/batch/v1"
 )
 
 type Enhancer interface {
-	Enhance(config *DeploymentJob)
+	EnhanceJob(job *batchv1.Job, data JobData)
+	SetDefaults()
 	Key() string
 }
 
@@ -38,6 +40,7 @@ func loadAndParseEnhancers(path string) ([]Enhancer, error) {
 			return enhancers, err
 		}
 
+		enhancer.SetDefaults()
 		enhancers = append(enhancers, enhancer)
 	}
 
@@ -50,6 +53,10 @@ func unmarshalEnhancerAttributes(config *ProviderConfig, b []byte) (Enhancer, er
 		kiam := &KiamConigEnhancer{}
 		err := yaml.Unmarshal(b, kiam)
 		return kiam, err
+	case "git-pull":
+		gp := &PullGitSourcesEnhancer{}
+		err := yaml.Unmarshal(b, gp)
+		return gp, err
 	default:
 		return nil, errors.New("unknown provider " + config.Provider)
 	}

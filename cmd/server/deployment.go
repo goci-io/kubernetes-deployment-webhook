@@ -30,6 +30,7 @@ func (d *DeploymentsHandler) deploy(context *WebhookContext) error {
 	job := &k8s.DeploymentJob{
 		Name: jobName,
 		SecretEnvName: configName,
+		Labels: map[string]string{},
 	}
 
 	copyConfigInto(config, job)
@@ -42,7 +43,6 @@ func copyConfigInto(config RepositoryConfig, into *k8s.DeploymentJob) {
 	into.Enhancers = config.Enhancers
 	into.Namespace = config.Namespace
 	into.ServiceAccount = config.ServiceAccount
-	into.Labels = make(map[string]string)
 	into.Labels["repository"] = config.Repository
 	into.Labels["organization"] = config.Organization
 }
