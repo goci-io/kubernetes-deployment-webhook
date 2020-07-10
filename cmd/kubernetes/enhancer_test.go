@@ -28,7 +28,7 @@ func TestEnhancerLoadAndParseCreatesEnhancers(t *testing.T) {
 		},
 	}
 
-	kiam.EnhanceJob(job)
+	kiam.EnhanceJob(job, nil)
 	expectedRole := "arn:aws:iam::123456789012:role/goci-build-app-role"
 
 	if job.Annotations["iam.amazonaws.com/role"] != expectedRole {

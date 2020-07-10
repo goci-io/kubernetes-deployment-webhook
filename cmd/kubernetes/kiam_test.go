@@ -20,7 +20,7 @@ func TestKiamEnhancerAppendsIAMAnnotations(t *testing.T) {
 		ExternalId: "external-id",
 	}
 
-	enhancer.EnhanceJob(job)
+	enhancer.EnhanceJob(job, nil)
 	expectedRole := "arn:aws:iam::12345678912:role/example"
 
 	if job.Annotations["iam.amazonaws.com/role"] != expectedRole {

@@ -17,12 +17,15 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+// used within Enhancers for example
+type JobData interface {}
+
 type DeploymentJob struct {
 	Name string
 	TTL  int32
+	Data JobData
 	Image string
 	Namespace string
-	Data interface{}
 	Enhancers []string
 	ServiceAccount string
 	Annotations map[string]string
@@ -99,11 +102,11 @@ func (client *Client) CreateJob(job *DeploymentJob) error {
 							Resources: corev1.ResourceRequirements{
 								Requests: corev1.ResourceList{
 									corev1.ResourceCPU: *resource.NewQuantity(300, resource.DecimalSI),
-									corev1.ResourceMemory: *resource.NewQuantity(156, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(156 * 1024*1024, resource.BinarySI),
 								},
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU: *resource.NewQuantity(300, resource.DecimalSI),
-									corev1.ResourceMemory: *resource.NewQuantity(156, resource.BinarySI),
+									corev1.ResourceMemory: *resource.NewQuantity(156 * 1024*1024, resource.BinarySI),
 								},
 							},
 							EnvFrom: []corev1.EnvFromSource{
@@ -126,7 +129,7 @@ func (client *Client) CreateJob(job *DeploymentJob) error {
 		enhancer := client.enhancers[i]
 
 		if contains(job.Enhancers, enhancer.Key()) {
-			enhancer.EnhanceJob(manifest)
+			enhancer.EnhanceJob(manifest, job.Data)
 		}
 	}
 

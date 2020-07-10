@@ -8,7 +8,7 @@ import (
 )
 
 type Enhancer interface {
-	EnhanceJob(job *batchv1.Job)
+	EnhanceJob(job *batchv1.Job, data JobData)
 	SetDefaults()
 	Key() string
 }
