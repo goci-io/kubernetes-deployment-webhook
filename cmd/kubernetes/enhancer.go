@@ -35,7 +35,7 @@ func loadAndParseEnhancers(path string) ([]Enhancer, error) {
     for i := range configs {
 		provider := &configs[i]
 		attributes, _ := yaml.Marshal(provider.Config)
-		enhancer, err := unmarshalEnhancerAttributes(provider, attributes);
+		enhancer, err := unmarshalEnhancerAttributes(provider, attributes)
 		if err != nil {
 			return enhancers, err
 		}

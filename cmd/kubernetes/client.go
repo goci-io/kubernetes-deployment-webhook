@@ -101,12 +101,12 @@ func (client *Client) CreateJob(job *DeploymentJob) error {
 							Image: job.Image,
 							Resources: corev1.ResourceRequirements{
 								Requests: corev1.ResourceList{
-									corev1.ResourceCPU: *resource.NewQuantity(300, resource.DecimalSI),
-									corev1.ResourceMemory: *resource.NewQuantity(156 * 1024*1024, resource.BinarySI),
+									corev1.ResourceCPU: resource.MustParse("300m"),
+									corev1.ResourceMemory: resource.MustParse("156Mi"),
 								},
 								Limits: corev1.ResourceList{
-									corev1.ResourceCPU: *resource.NewQuantity(300, resource.DecimalSI),
-									corev1.ResourceMemory: *resource.NewQuantity(156 * 1024*1024, resource.BinarySI),
+									corev1.ResourceCPU: resource.MustParse("300m"),
+									corev1.ResourceMemory: resource.MustParse("156Mi"),
 								},
 							},
 							EnvFrom: []corev1.EnvFromSource{
