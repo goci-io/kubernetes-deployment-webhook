@@ -1,0 +1,13 @@
+bash
+git
+make
+jq
+python3
+unzip
+tar
+curl
+dpkg
+tzdata
+coreutils
+openssh-client
+ca-certificates
