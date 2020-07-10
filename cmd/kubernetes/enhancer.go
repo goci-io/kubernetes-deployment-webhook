@@ -4,10 +4,11 @@ import (
 	"errors"
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
+	batchv1 "k8s.io/api/batch/v1"
 )
 
 type Enhancer interface {
-	Enhance(config *DeploymentJob)
+	EnhanceJob(job *batchv1.Job)
 	Key() string
 }
 

@@ -39,7 +39,7 @@ func (client *Client) Init(enhancerConfigPath string) error {
 	var config *rest.Config
 	var err error
 
-	if InClusterAuthPossible() {
+	if inClusterAuthPossible() {
 		config, err = rest.InClusterConfig()
 	} else {
 		var kubeconfig *string
@@ -68,14 +68,6 @@ func (client *Client) Init(enhancerConfigPath string) error {
 func (client *Client) CreateJob(job *DeploymentJob) error {
 	name := strings.ToLower(job.Name)
 
-	for i := 0; i < len(client.enhancers); i++ {
-		enhancer := client.enhancers[i]
-
-		if contains(job.Enhancers, enhancer.Key()) {
-			enhancer.Enhance(job)
-		}
-	}
-
 	manifest := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -102,7 +94,7 @@ func (client *Client) CreateJob(job *DeploymentJob) error {
 					},
 					Containers: []corev1.Container{
 						{
-							Name: name,
+							Name: "job",
 							Image: job.Image,
 							Resources: corev1.ResourceRequirements{
 								Requests: corev1.ResourceList{
@@ -125,9 +117,30 @@ func (client *Client) CreateJob(job *DeploymentJob) error {
 							},
 						},
 					},
+					InitContainers: []corev1.Container{
+						{
+							Name: "pull-sources",
+							Image: "gocidocker/k8s-deploy-alpine:0.1.0",
+							Command: []string{},
+							Env: []corev1.EnvVar{
+								{
+									Name: "GIT_SSH_COMMAND",
+									Value: "ssh -i /run/secrets/git",
+								},
+							},
+						},
+					},
 				},
 			},
 		},
+	}
+
+	for i := 0; i < len(client.enhancers); i++ {
+		enhancer := client.enhancers[i]
+
+		if contains(job.Enhancers, enhancer.Key()) {
+			enhancer.EnhanceJob(manifest)
+		}
 	}
 
 	_, err := client.batchV1.Jobs(job.Namespace).Create(manifest)
@@ -146,7 +159,7 @@ func create64(x int64) *int64 {
     return &x
 }
 
-func InClusterAuthPossible() bool {
+func inClusterAuthPossible() bool {
 	fi, err := os.Stat("/var/run/secrets/kubernetes.io/serviceaccount/token")
 	return os.Getenv("KUBERNETES_SERVICE_HOST") != "" &&
 		os.Getenv("KUBERNETES_SERVICE_PORT") != "" &&

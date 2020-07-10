@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"fmt"
+	batchv1 "k8s.io/api/batch/v1"
 )
 
 type KiamConigEnhancer struct {
@@ -12,11 +13,11 @@ type KiamConigEnhancer struct {
 	KeySuffix string	`yaml:"keySuffix"`
 }
 
-func (enhancer *KiamConigEnhancer) Enhance(config *DeploymentJob) {
+func (enhancer *KiamConigEnhancer) EnhanceJob(job *batchv1.Job) {
 	var role = fmt.Sprintf("arn:%s:iam::%s:role/%s", enhancer.Partition, enhancer.AccountId, enhancer.RoleName)
 
-	config.Annotations["iam.amazonaws.com/role"] = role
-	config.Annotations["iam.amazonaws.com/external-id"] = enhancer.ExternalId
+	job.ObjectMeta.Annotations["iam.amazonaws.com/role"] = role
+	job.ObjectMeta.Annotations["iam.amazonaws.com/external-id"] = enhancer.ExternalId
 }
 
 func (enhancer *KiamConigEnhancer) Key() string {
