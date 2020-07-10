@@ -3,3 +3,5 @@
   image: repo/image:tag
   serviceAccount: default
   namespace: default
+  enhancers:
+  - git-pull
