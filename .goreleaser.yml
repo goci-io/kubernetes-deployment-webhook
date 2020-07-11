@@ -2,3 +2,7 @@ builds:
 - dir: ./cmd/server
   env:
   - CGO_ENABLED=0
+release:
+  github:
+    owner: goci-io
+    name: kubernetes-deployment-webhook
