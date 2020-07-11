@@ -10,7 +10,7 @@ RUN apk add --update --no-cache $(grep -v '^#' /etc/apk/packages.txt) && \
 
 RUN mkdir -p /run/workspace && \
     addgroup runner && \
-    adduser -S -G runner runner && \
+    adduser --home /run/workspace --uid 1000 --disabled-password -G runner runner && \
     chown runner:runner /run/workspace/ && \
     chmod g=u /run/workspace/
 
