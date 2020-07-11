@@ -43,7 +43,7 @@ func (enhancer *PullGitSourcesEnhancer) EnhanceJob(job *batchv1.Job, d JobData) 
 
 	job.Spec.Template.Spec.InitContainers = append(job.Spec.Template.Spec.InitContainers, corev1.Container{
 		Name: "pull-sources",
-		Image: "gocidocker/k8s-deploy-alpine:0.1.0",
+		Image: "gocidocker/k8s-deploy-alpine:0.1.1",
 		Command: []string{"/bin/bash"},
 		Args: []string{"-c", pullCmd},
 		Env: []corev1.EnvVar{
