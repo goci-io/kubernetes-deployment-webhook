@@ -1,6 +1,8 @@
 .DEFAULT_GOAL := image/server
 
-export RELEASE ?= latest
+export GIT_REF ?= latest
+export IGNORE_REF ?= refs/tags/
+export RELEASE ?= $(subst $(IGNORE_REF),,$(GIT_REF))
 export CONFIG_DIR ?= ./config
 export WEBHOOK_SECRET ?= test
 export FORCE_NON_TLS_SERVER ?= 1

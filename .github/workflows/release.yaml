@@ -26,5 +26,8 @@ jobs:
         run: make image/server
       - name: Build Image
         run: make image/docker
-      - name: Release
+      - name: Release Latest
         run: make image/docker/release
+      - name: New Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: make image/docker/release GIT_REF={{ github.ref }}
