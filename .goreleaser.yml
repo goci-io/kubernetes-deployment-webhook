@@ -1,7 +1,7 @@
 builds:
 - id: server
   dir: ./cmd/server
-  binary: ./bin/webhook-server
+  binary: bin/webhook-server
   goarch:
   - amd64
   env:
@@ -10,10 +10,12 @@ dockers:
 - goarch: amd64
   goos: linux
   binaries:
-  - ./bin/webhook-server
+  - bin/webhook-server
   builds:
   - server
   image_templates:
   - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:{{ .Tag }}"
   - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:v{{ .Major }}"
   - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:v{{ .Major }}.{{ .Minor }}"
+archives:
+- format: binary
