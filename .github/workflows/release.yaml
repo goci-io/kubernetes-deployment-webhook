@@ -22,18 +22,9 @@ jobs:
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | \
           docker login docker.pkg.github.com -u docker --password-stdin
-      - name: New Release
-        uses: goreleaser/goreleaser-action@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          args: release --rm-dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update Latest
-        uses: goreleaser/goreleaser-action@v2
-        if: github.ref == 'refs/heads/master'
-        with:
-          version: latest
-          args: release --rm-dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Binary
+        run: make image/server
+      - name: Build Image
+        run: make image/docker
+      - name: Release
+        run: make image/docker/release
