@@ -65,7 +65,7 @@ rbac:
     verbs: ["create"]
 
 image:
-  name: gocidocker/k8s-deployment-webhook
+  name: docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server
   tag: v0.1.0
 
 # Mount TLS Secrets
@@ -76,7 +76,7 @@ extraVolumeMounts:
 extraVolumes:
 - name: tls
   secret:
-    defaultMode: 0600
+    defaultMode: 0400
     secretName: k8s-deployment-webhook-tls
 ```
 
