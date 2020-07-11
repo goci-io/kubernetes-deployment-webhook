@@ -5,10 +5,10 @@ builds:
   env:
   - CGO_ENABLED=0
 dockers:
-- builds:
-  - server
+- goos: linux
+  goarch: amd64
   binaries:
-  - server_linux_amd64/bin/webhook-server
+  - bin/webhook-server
   image_templates:
   - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:{{ .Tag }}"
   - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:v{{ .Major }}"
