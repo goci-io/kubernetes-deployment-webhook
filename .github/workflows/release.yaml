@@ -19,14 +19,14 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.14
-      - name: Run GoReleaser
+      - name: New Release
         uses: goreleaser/goreleaser-action@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run GoReleaser
+      - name: Update Latest
         uses: goreleaser/goreleaser-action@v2
         if: github.ref == 'refs/heads/master'
         with:
@@ -34,9 +34,9 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run GoReleaser
+      - name: Create Snapshot
         uses: goreleaser/goreleaser-action@v2
-        if: startsWith(github.ref, 'refs/heads/') && github.ref != 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/pull/')
         with:
           args: release --rm-dist --snapshot
         env:
