@@ -7,8 +7,6 @@ builds:
 dockers:
 - goos: linux
   goarch: amd64
-  builds:
-  - server
   binaries:
   - bin/webhook-server
   dockerfile: Dockerfile
