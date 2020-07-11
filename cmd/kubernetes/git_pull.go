@@ -49,7 +49,7 @@ func (enhancer *PullGitSourcesEnhancer) EnhanceJob(job *batchv1.Job, d JobData) 
 		Env: []corev1.EnvVar{
 			{
 				Name: "GIT_SSH_COMMAND",
-				Value: "ssh -i /run/secrets/git/id_rsa -o StrictHostKeyChecking=no",
+				Value: "ssh -i /run/secrets/git/id_rsa",
 			},
 		},
 		VolumeMounts: []corev1.VolumeMount{
