@@ -13,7 +13,7 @@ image/server/darwin:
 	CGO_ENABLED=0 GOOS=darwin go build -ldflags="-s -w" -o ./bin/webhook-server ./cmd/server
 
 image/docker: image/server
-	docker build kubernetes-deployment-webhook .
+	docker build -t kubernetes-deployment-webhook .
 
 image/docker/release:
 	docker tag kubernetes-deployment-webhook docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:$(RELEASE)
