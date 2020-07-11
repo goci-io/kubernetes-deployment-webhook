@@ -6,3 +6,6 @@ release:
   github:
     owner: goci-io
     name: kubernetes-deployment-webhook
+dockers:
+- image_templates:
+  - docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server
