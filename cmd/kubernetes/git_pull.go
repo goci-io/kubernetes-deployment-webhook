@@ -43,19 +43,20 @@ func (enhancer *PullGitSourcesEnhancer) EnhanceJob(job *batchv1.Job, d JobData) 
 
 	job.Spec.Template.Spec.InitContainers = append(job.Spec.Template.Spec.InitContainers, corev1.Container{
 		Name: "pull-sources",
-		Image: "gocidocker/k8s-deploy-alpine:0.1.0",
-		Command: []string{pullCmd},
+		Image: "gocidocker/k8s-deploy-alpine:0.1.1",
+		Command: []string{"/bin/bash"},
+		Args: []string{"-c", pullCmd},
 		Env: []corev1.EnvVar{
 			{
 				Name: "GIT_SSH_COMMAND",
-				Value: "ssh -i /run/secrets/git/id_rsa -o StrictHostKeyChecking=no",
+				Value: "ssh -i /run/secrets/git/id_rsa",
 			},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name: "sources",
-				ReadOnly: false,
-				MountPath: "/run/workspace",
+				ReadOnly: true,
+				MountPath: "/run/workspace/checkout",
 			},
 			{
 				Name: "git-ssh",
