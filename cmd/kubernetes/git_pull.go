@@ -55,8 +55,8 @@ func (enhancer *PullGitSourcesEnhancer) EnhanceJob(job *batchv1.Job, d JobData) 
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name: "sources",
-				ReadOnly: false,
-				MountPath: "/run/workspace",
+				ReadOnly: true,
+				MountPath: "/run/workspace/checkout",
 			},
 			{
 				Name: "git-ssh",
