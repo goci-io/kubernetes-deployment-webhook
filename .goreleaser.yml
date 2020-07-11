@@ -1,5 +1,5 @@
 builds:
-- name: server
+- id: server
   dir: ./cmd/server
   binary: /bin/webhook-server
   env:
