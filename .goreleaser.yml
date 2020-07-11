@@ -1,13 +1,21 @@
 builds:
-- id: server
+- name: server
   dir: ./cmd/server
   binary: /bin/webhook-server
   env:
   - CGO_ENABLED=0
+release:
+  github:
+    owner: goci-io
+    name: kubernetes-deployment-webhook
 dockers:
 - builds:
   - server
+  goos: linux
+  goarch: amd64
   binaries:
   - /bin/webhook-server
   image_templates:
-  - docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server
+  - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:{{ .Tag }}"
+  - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:v{{ .Major }}"
+  - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:v{{ .Major }}.{{ .Minor }}"
