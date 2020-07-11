@@ -4,10 +4,6 @@ builds:
   binary: /bin/webhook-server
   env:
   - CGO_ENABLED=0
-release:
-  github:
-    owner: goci-io
-    name: kubernetes-deployment-webhook
 dockers:
 - builds:
   - server
