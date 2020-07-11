@@ -9,6 +9,8 @@ dockers:
   goarch: amd64
   builds:
   - server
+  binaries:
+  - bin/webhook-server
   dockerfile: Dockerfile
   image_templates:
   - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:{{ .Tag }}"
