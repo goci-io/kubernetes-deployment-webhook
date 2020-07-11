@@ -10,7 +10,7 @@ dockers:
   goos: linux
   goarch: amd64
   binaries:
-  - bin/webhook-server
+  - kubernetes-deployment-webhook/bin/webhook-server
   image_templates:
   - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:{{ .Tag }}"
   - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:v{{ .Major }}"
