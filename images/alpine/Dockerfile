@@ -15,5 +15,10 @@ RUN mkdir -p /run/workspace && \
     chmod g=u /run/workspace/
 
 WORKDIR /run/workspace
+USER runner 
+
+RUN mkdir ~/.ssh && \
+    ssh-keyscan github.com >> ~/.ssh/known_hosts && \
+    ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 
 ENTRYPOINT [ "/bin/bash", "-c" ]
