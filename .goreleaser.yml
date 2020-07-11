@@ -7,8 +7,9 @@ builds:
 dockers:
 - goos: linux
   goarch: amd64
-  binaries:
-  - bin/webhook-server
+  builds:
+  - server
+  dockerfile: Dockerfile
   image_templates:
   - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:{{ .Tag }}"
   - "docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:v{{ .Major }}"
