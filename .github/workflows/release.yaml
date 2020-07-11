@@ -30,14 +30,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         if: github.ref == 'refs/heads/master'
         with:
-          version: latest
-          args: release --rm-dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Snapshot
-        uses: goreleaser/goreleaser-action@v2
-        if: startsWith(github.ref, 'refs/pull/')
-        with:
           args: release --rm-dist --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
