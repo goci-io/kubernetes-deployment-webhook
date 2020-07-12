@@ -7,10 +7,8 @@
 
 ### Purpose 
 
-HTTP Server listening for Webhooks from Version Control Systems to deploy Kubernetes Jobs utilizing In-Cluster Auth to connect to the Kubernetes API. 
+HTTP Server listening for Webhooks from Version Control Systems to deploy Kubernetes Jobs utilizing In-Cluster Auth to connect to the Kubernetes API and use In-Cluster Secrets. 
 This Application can currently only validate Github Webhook Signatures and deploy from publicly available Repositories. Further restrictions initially apply by default to enhance security for example by disabling webhook from forked Repositories and limited to Releases or pushes to a references ending with `/master`. 
-
-At goci.io we use this Webhook Server for our external Provider-Integrations to support their own Release-Cycles and further configuration for Deployments.
 
 ### Run
 
@@ -40,7 +38,8 @@ docker run \
     -it gocidocker/k8s-deployment-webhook:v0.1.0
 ```
 
-You can find an example Request Payload [here](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/README.md#development)
+You can find an example Request Payload [here](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/README.md#development).
+By default the Application will serve its Endpoints via HTTPS (requires TLS configuration).
 
 ### Configure
 The following Two Configuration Files are required:
@@ -156,5 +155,8 @@ x-github-event: push
 }
 ```
 </details>
+
+#### Disable TLS
+In case an external Provider is terminating TLS Connections you can force the Application to start a non-TLS Server by adding `FORCE_NON_TLS_SERVER=1` to your environment specification.
 
 _This repository was created via [github-repository](https://github.com/goci-io/github-repository)._
