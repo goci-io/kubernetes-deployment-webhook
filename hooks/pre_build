@@ -1,4 +1,4 @@
 #!/bin/bash
 
 echo "=> Building the binary"
-make image/docker
+make bin/in-docker

@@ -1,11 +1,11 @@
-.DEFAULT_GOAL := image/docker
+.DEFAULT_GOAL := bin/in-docker
 
 export CONFIG_DIR ?= ./config
 export WEBHOOK_SECRET ?= test
 export FORCE_NON_TLS_SERVER ?= 1
 export ORGANIZATION_WHITELIST ?= goci-io
 
-image/docker:
+bin/in-docker:
 	docker run --rm \
 		-e DOCKER_BUILD_CONTEXT=. \
 		-e OUTPUT=bin/webhook-server \
@@ -14,14 +14,11 @@ image/docker:
 		-v $(pwd):/src \
 		centurylink/golang-builder
 
-image/server:
+bin/server:
 	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o ./bin/webhook-server ./cmd/server
 
-image/server/darwin:
+bin/server/darwin:
 	CGO_ENABLED=0 GOOS=darwin go build -ldflags="-s -w" -o ./bin/webhook-server ./cmd/server
-
-image/docker: image/server
-	docker build -t kubernetes-deployment-webhook .
 
 run:
 	go build
