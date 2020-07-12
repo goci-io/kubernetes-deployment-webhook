@@ -46,12 +46,21 @@ func (client *Client) Init(enhancerConfigPath string) error {
 		config, err = rest.InClusterConfig()
 	} else {
 		var kubeconfig *string
-		if home := homeDir(); home != "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return err
+		}
+
+		if home != "" {
 			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 		} else {
 			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 		}
 		config, err = clientcmd.BuildConfigFromFlags("", *kubeconfig)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	if err != nil {
@@ -163,11 +172,4 @@ func contains(arr []string, search string) bool {
         }
     }
     return false
-}
-
-func homeDir() string {
-	if h := os.Getenv("HOME"); h != "" {
-		return h
-	}
-	return os.Getenv("USERPROFILE") // windows
 }

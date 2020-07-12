@@ -29,16 +29,6 @@ See [Configure](https://github.com/goci-io/kubernetes-deployment-webhook/blob/ma
 make run/local
 ```
 
-You can also use our Docker Release:
-```
-docker run \
-    -e CONFIG_DIR=/run/config
-    -e WEBHOOK_SECRET=my-secret \
-    -e ORGANIZATION_WHITELIST=org1,org2 \
-    -v config:/run/config
-    -it gocidocker/k8s-deployment-webhook:v0.1.0
-```
-
 You can find an example Request Payload [here](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/README.md#development).
 By default the Application will serve its Endpoints via HTTPS (requires TLS configuration).
 
@@ -70,7 +60,7 @@ Using [goci-service-chart](https://github.com/goci-io/goci-service-chart) with t
 3. Create ConfigMaps for repos.yaml and enhancers.yaml configuration  
 4. Configure the following `values.yaml`:  
 ```yaml
-port: 8443
+port: 9443
 fullnameOverride: k8s-deploy-webhook
 
 configMap:

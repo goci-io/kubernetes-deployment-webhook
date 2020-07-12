@@ -24,7 +24,7 @@ func main() {
 	mux.Handle("/event", http.HandlerFunc(webhook.handle))
 
 	server := &http.Server{
-		Addr:    ":8443",
+		Addr:    ":9443",
 		Handler: mux,
 	}
 
@@ -49,7 +49,9 @@ func createHandler() *WebhookHandler {
 	}
 
 	k8sClient := &k8s.Client{}
-	k8sClient.Init(enhancersPath)
+	if err = k8sClient.Init(enhancersPath); err != nil {
+		log.Fatal("error creating k8s client: " + err.Error())
+	}
 
 	deployments := &DeploymentsHandler{
 		configs: configs,
