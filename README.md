@@ -19,9 +19,10 @@ This Application can currently only validate Github Webhook Signatures and deplo
 - Different GOOS: Run `GOOS=<GOOS> go build -o ./bin/webhook-server ./cmd/server` by your own
 
 2. Configure Environment
+
 See [Configure](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/README.md#configure) section on how to add additional Configuration files and configure the Webhook.
 
-3. Run
+3. Run  
 ```
 # Use Make to set required Env-Vars
 # Defaults: WEBHOOK_SECRET=test, ORGANIZATION_WHITELIST=goci-io, disabled https
