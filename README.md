@@ -21,16 +21,13 @@ At goci.io we use this Webhook Server for our external Provider-Integrations to 
 - Different GOOS: Run `GOOS=<GOOS> go build -o ./bin/webhook-server ./cmd/server` by your own
 
 2. Configure Environment
-See also [Configure](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/README.md#configure) section. Additional Configuration files are required.
+See [Configure](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/README.md#configure) section on how to add additional Configuration files and configure the Webhook.
 
-```
-export GIT_HOST=github.com (default)
-export WEBHOOK_SECRET=my-secret (required)
-export ORGANIZATION_WHITELIST=org1,org2 (default: none)
-```
 3. Run
 ```
-./bin/webhook-server
+# Use Make to set required Env-Vars
+# Defaults: WEBHOOK_SECRET=test, ORGANIZATION_WHITELIST=goci-io, disabled https
+make run/local
 ```
 
 You can also use our Docker Release:
@@ -43,7 +40,7 @@ docker run \
     -it gocidocker/k8s-deployment-webhook:v0.1.0
 ```
 
-You can find an example Request Payload [here](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/README.md#example)
+You can find an example Request Payload [here](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/README.md#development)
 
 ### Configure
 The following Two Configuration Files are required:
@@ -68,9 +65,10 @@ This requires a Secret following the naming Convention of `<org>-<repo>-ssh`, pr
 
 Using [goci-service-chart](https://github.com/goci-io/goci-service-chart) with the following **example config**: 
 
-1. Create a Secret containing the `WEBHOOK_SECRET` environment variable
-2. Ensure following config environment variables are set as well: `ORGANIZATION_WHITELIST`
-2. Configure the following `values.yaml`:  
+1. Create a Secret containing the `WEBHOOK_SECRET` environment variable  
+2. Ensure following config environment variables are set as well: `ORGANIZATION_WHITELIST`  
+3. Create ConfigMaps for repos.yaml and enhancers.yaml configuration  
+4. Configure the following `values.yaml`:  
 ```yaml
 port: 8443
 
@@ -109,9 +107,9 @@ extraVolumes:
 
 ### Tests
 
-Run Tests using `make tests`.
+Run Tests using `make tests`. This will run Tests in `server` and `kubernetes` packages.
 
-#### Example
+### Development
 
 To run this Application locally you need to build the Binary (see above) and run the App locally. To start the Application you can use `make run/local` which creates all necessary environment variables and default configurations (can be found [here](https://github.com/goci-io/kubernetes-deployment-webhook/tree/master/config/)). You will also need to specify the following Headers in your Requests:
 ```
