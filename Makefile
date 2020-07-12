@@ -1,3 +1,4 @@
+ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 .DEFAULT_GOAL := bin/in-docker
 
 export CONFIG_DIR ?= ./config
@@ -7,11 +8,11 @@ export ORGANIZATION_WHITELIST ?= goci-io
 
 bin/in-docker:
 	docker run --rm \
-		-e DOCKER_BUILD_CONTEXT=. \
+		-e DOCKER_BUILD_CONTEXT=$(ROOT_DIR) \
 		-e OUTPUT=bin/webhook-server \
 		-e MAIN_PATH=cmd/server \
 		-e LDFLAGS="-s -w" \
-		-v $(pwd):/src \
+		-v $(ROOT_DIR):/src \
 		centurylink/golang-builder
 
 bin/server:
