@@ -65,7 +65,7 @@ rbac:
     verbs: ["create"]
 
 image:
-  name: docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server
+  name: gocidocker/k8s-deploy-webhook
   tag: v0.1.0
 
 # Mount TLS Secrets

@@ -1,8 +1,5 @@
 .DEFAULT_GOAL := image/server
 
-export GIT_REF ?= latest
-export IGNORE_REF ?= refs/tags/
-export RELEASE ?= $(subst $(IGNORE_REF),,$(GIT_REF))
 export CONFIG_DIR ?= ./config
 export WEBHOOK_SECRET ?= test
 export FORCE_NON_TLS_SERVER ?= 1
@@ -16,10 +13,6 @@ image/server/darwin:
 
 image/docker: image/server
 	docker build -t kubernetes-deployment-webhook .
-
-image/docker/release:
-	docker tag kubernetes-deployment-webhook docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:$(RELEASE)
-	docker push docker.pkg.github.com/goci-io/kubernetes-deployment-webhook/server:$(RELEASE)
 
 run:
 	go build
