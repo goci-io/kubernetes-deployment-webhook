@@ -47,7 +47,7 @@ The following Two Configuration Files are required:
 ##### [`repos.yaml`](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/config/repos.yaml)
 Configure your Repositories and which Jobs to execute.
 
-##### [`enhancers.yaml`](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/config/repos.yaml)
+##### [`enhancers.yaml`](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/config/enhancers.yaml)
 Enhancers are used to populate additional Fields into the Kubernetes Job Manifest.
 You can read more about Enhancers within the [k8s package](https://github.com/goci-io/kubernetes-deployment-webhook/tree/master/cmd/kubernetes).
 
