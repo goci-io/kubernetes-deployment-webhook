@@ -1,4 +1,4 @@
-package main
+package main // import "github.com/goci-io/deployment-webhook/cmd/server"
 
 import (
 	"os"
