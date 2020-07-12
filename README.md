@@ -58,7 +58,7 @@ You can read more about Enhancers within the [k8s package](https://github.com/go
 
 ##### `git pull` 
 We can add an Init-Container to your Job automatically which downloads your Sources into a Temporary Directory.
-This requires a Secret following the naming Convention of `<org>-<repo>-ssh`, providing `id_rsa` property containing a private [Deploy SSH Key](https://docs.github.com/en/developers/overview/managing-deploy-keys).
+This requires a Secret following the naming Convention of `<org>-<repo>-ssh`, providing `id_rsa` property containing a private [Deploy SSH Key](https://docs.github.com/en/developers/overview/managing-deploy-keys). Sources are mounted into `/run/workspace/checkout` with ReadOnly Access.
 
 ### Deploy
 
