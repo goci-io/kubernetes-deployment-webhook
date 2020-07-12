@@ -70,6 +70,7 @@ Using [goci-service-chart](https://github.com/goci-io/goci-service-chart) with t
 4. Configure the following `values.yaml`:  
 ```yaml
 port: 8443
+fullnameOverride: k8s-deploy-webhook
 
 configMap:
   data:
@@ -90,9 +91,16 @@ rbac:
 
 image:
   name: gocidocker/k8s-deploy-webhook
-  tag: v0.1.0
+  tag: <LATEST_VERSION>
 
-# Mount TLS Secrets
+ingress:
+  create: true
+  tls: true
+  hosts:
+  - host: <YOUR_DOMAIN>
+    paths:
+    - /
+
 extraVolumeMounts:
 - name: tls
   mountPath: "/run/secrets/tls"
@@ -101,7 +109,7 @@ extraVolumes:
 - name: tls
   secret:
     defaultMode: 0400
-    secretName: k8s-deployment-webhook-tls
+    secretName: k8s-deploy-webhook-tls
 ```
 
 ### Tests
