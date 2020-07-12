@@ -15,7 +15,7 @@ At goci.io we use this Webhook Server for our external Provider-Integrations to 
 ### Run
 
 1. Build the Binary
-`make image/server` or `make image/server/darwin`.   
+`make image/docker` (within Docker, no Go required locally) or `make image/server` (Linux) or `make image/server/darwin` (MacOS).   
 1.1 In case you are running on a different GOOS than Linux or Darwin you need to use `GOOS=<GOOS> go build -o ./bin/webhook-server ./cmd/server` by your own.
 
 2. Configure Environment

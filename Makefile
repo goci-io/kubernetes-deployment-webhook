@@ -1,9 +1,18 @@
-.DEFAULT_GOAL := image/server
+.DEFAULT_GOAL := image/docker
 
 export CONFIG_DIR ?= ./config
 export WEBHOOK_SECRET ?= test
 export FORCE_NON_TLS_SERVER ?= 1
 export ORGANIZATION_WHITELIST ?= goci-io
+
+image/docker:
+	docker run --rm \
+		-e DOCKER_BUILD_CONTEXT=. \
+		-e OUTPUT=bin/webhook-server \
+		-e MAIN_PATH=cmd/server \
+		-e LDFLAGS="-s -w" \
+		-v $(pwd):/src \
+		centurylink/golang-builder
 
 image/server:
 	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o ./bin/webhook-server ./cmd/server

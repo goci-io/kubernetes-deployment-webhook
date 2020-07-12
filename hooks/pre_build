@@ -1,3 +1,4 @@
 #!/bin/bash
 
-make image/server
+echo "=> Building the binary"
+make image/docker
