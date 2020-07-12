@@ -1,4 +1,4 @@
-package vcs
+package vcs // import "github.com/goci-io/deployment-webhook/cmd/vcs"
 
 import (
 	"net/http"

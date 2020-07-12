@@ -1,4 +1,4 @@
-package k8s
+package k8s // import "github.com/goci-io/deployment-webhook/cmd/kubernetes"
 
 import (
 	"os"
