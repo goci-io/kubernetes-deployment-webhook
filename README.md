@@ -15,10 +15,14 @@ At goci.io we use this Webhook Server for our external Provider-Integrations to 
 ### Run
 
 1. Build the Binary
-`make` (build within Docker, no Go required locally) or `make bin/server` (Linux) or `make bin/server/darwin` (MacOS).   
-1.1 In case you are running on a different GOOS than Linux or Darwin you need to use `GOOS=<GOOS> go build -o ./bin/webhook-server ./cmd/server` by your own.
+- `make` (build within Docker, no Go required locally)
+- `make bin/server` (Linux)
+- `make bin/server/darwin` (MacOS).   
+- Different GOOS: Run `GOOS=<GOOS> go build -o ./bin/webhook-server ./cmd/server` by your own
 
 2. Configure Environment
+See also [Configure](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/README.md#configure) section. Additional Configuration files are required.
+
 ```
 export GIT_HOST=github.com (default)
 export WEBHOOK_SECRET=my-secret (required)
@@ -32,10 +36,33 @@ export ORGANIZATION_WHITELIST=org1,org2 (default: none)
 You can also use our Docker Release:
 ```
 docker run \
+    -e CONFIG_DIR=/run/config
     -e WEBHOOK_SECRET=my-secret \
     -e ORGANIZATION_WHITELIST=org1,org2 \
+    -v config:/run/config
     -it gocidocker/k8s-deployment-webhook:v0.1.0
 ```
+
+You can find an example Request Payload [here](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/README.md#example)
+
+### Configure
+The following Two Configuration Files are required:
+
+##### [`repos.yaml`](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/config/repos.yaml)
+Configure your Repositories and which Jobs to execute.
+
+##### [`enhancers.yaml`](https://github.com/goci-io/kubernetes-deployment-webhook/blob/master/config/repos.yaml)
+Enhancers are used to populate additional Fields into the Kubernetes Job Manifest.
+You can read more about Enhancers within the [k8s package](https://github.com/goci-io/kubernetes-deployment-webhook/tree/master/cmd/kubernetes).
+
+##### Webhook
+- Webhook Secrets are required. The Server wont start without a Secret.
+- Currently only one Webhook Secret is required per Installation
+- Webhook Events need to be send to `POST /event`
+
+##### `git pull` 
+We can add an Init-Container to your Job automatically which downloads your Sources into a Temporary Directory.
+This requires a Secret following the naming Convention of `<org>-<repo>-ssh`, providing `id_rsa` property containing a private [Deploy SSH Key](https://docs.github.com/en/developers/overview/managing-deploy-keys).
 
 ### Deploy
 
@@ -84,7 +111,9 @@ extraVolumes:
 
 Run Tests using `make tests`.
 
-To run this Application locally you need to build the Binary (see above) and run the App locally. To start the Application you can use `make run/local` which creates all necessary environment variables and default configurations (can be found [here](config/)). You will also need to specify the following Headers in your Requests:
+#### Example
+
+To run this Application locally you need to build the Binary (see above) and run the App locally. To start the Application you can use `make run/local` which creates all necessary environment variables and default configurations (can be found [here](https://github.com/goci-io/kubernetes-deployment-webhook/tree/master/config/)). You will also need to specify the following Headers in your Requests:
 ```
 x-hub-signature: sha1=37df8bce63ad1e1acc699d9575afabc3de2ff9ac
 x-github-event: push
